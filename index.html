@@ -1225,7 +1225,7 @@ input[type="range"]::-moz-range-thumb {
           <div class="mixer-arrow">→</div>
           <!-- Aux Send -->
           <div class="mixer-stage" id="stage-aux">
-            <div class="stage-label">Aux Send</div>
+            <div class="stage-label">Aux Send<br><span style="font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-muted);font-size:0.68rem;">(e.g. reverb)</span></div>
             <div class="meter-v-container">
               <div class="meter-v-fill" id="meter-aux"></div>
               <div class="meter-v-clip" id="clip-ind-aux"></div>
@@ -1445,6 +1445,16 @@ async function initAudio() {
   isAudioInit = true;
 }
 
+// Stop every other playing audio source so only one section is audible at a time
+function stopAllAudioExcept(which) {
+  if (which !== 'preamp' && preampPlaying) stopPreampDemo();
+  if (which !== 'mixer' && mixerPlaying) stopMixer();
+  if (which !== 'ab' && abPlaying) stopABDemo();
+  Object.keys(challengeAudio).forEach(id => {
+    if (which !== 'challenge-' + id) stopChallengeAudio(parseInt(id));
+  });
+}
+
 function dbToGain(db) {
   if (db <= -60) return 0;
   return Math.pow(10, db / 20);
@@ -1470,31 +1480,34 @@ async function startPreampDemo() {
     stopPreampDemo();
     return;
   }
-  const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator();
-  const merge = audioCtx.createGain();
-  merge.gain.value = 0.3;
-  osc1.type = 'sawtooth';
-  osc1.frequency.value = 220;
-  osc2.type = 'sine';
-  osc2.frequency.value = 221;
+  stopAllAudioExcept('preamp');
+  // Pure sine wave — clean when not clipping, obviously buzzy/distorted when it does
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = 220; // A3
+  // Source trim: attenuate the raw oscillator so "0 dB" on the slider
+  // lands in the healthy green zone with real headroom before clipping
+  const sourceTrim = audioCtx.createGain();
+  sourceTrim.gain.value = dbToGain(-12); // -12 dBFS source
   preampGain = audioCtx.createGain();
   preampGain.gain.value = dbToGain(sliderToDb(50));
-  // waveshaper for clipping
+  // Hard clipper — chops the tops/bottoms flat when signal exceeds 1.0
   preampClipNode = audioCtx.createWaveShaper();
-  preampClipNode.curve = makeClipCurve(1.0);
+  preampClipNode.curve = makeHardClipCurve();
   preampClipNode.oversample = '4x';
+  // Output trim to keep playback volume reasonable regardless of clipping
+  const outTrim = audioCtx.createGain();
+  outTrim.gain.value = 0.5;
   preampAnalyser = audioCtx.createAnalyser();
   preampAnalyser.fftSize = 2048;
-  osc1.connect(merge);
-  osc2.connect(merge);
-  merge.connect(preampGain);
+  osc.connect(sourceTrim);
+  sourceTrim.connect(preampGain);
   preampGain.connect(preampClipNode);
   preampClipNode.connect(preampAnalyser);
-  preampAnalyser.connect(audioCtx.destination);
-  osc1.start();
-  osc2.start();
-  preampOscs = [osc1, osc2];
+  preampAnalyser.connect(outTrim);
+  outTrim.connect(audioCtx.destination);
+  osc.start();
+  preampOscs = [osc];
   preampPlaying = true;
   document.getElementById('preamp-play').textContent = '⏹';
   document.getElementById('preamp-play').classList.add('playing');
@@ -1505,6 +1518,7 @@ async function startPreampDemo() {
 function stopPreampDemo() {
   preampOscs.forEach(o => { try { o.stop(); } catch(e){} });
   preampOscs = [];
+  delete meterBallistics['preamp'];
   preampPlaying = false;
   document.getElementById('preamp-play').textContent = '▶';
   document.getElementById('preamp-play').classList.remove('playing');
@@ -1532,15 +1546,11 @@ document.getElementById('preamp-gain-slider').addEventListener('input', function
 
 function updatePreampMeter() {
   if (!preampPlaying || !preampAnalyser) return;
-  const data = new Float32Array(preampAnalyser.fftSize);
-  preampAnalyser.getFloatTimeDomainData(data);
-  let peak = 0;
-  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-  const db = gainToDb(peak);
+  const { db, peakInstant } = readAndSmoothMeter(preampAnalyser, 'preamp');
   const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
   document.getElementById('preamp-meter-fill').style.width = pct + '%';
   document.getElementById('preamp-meter-label').textContent = db > -60 ? db.toFixed(1) + ' dB' : '-∞ dB';
-  const clipping = peak >= 0.98;
+  const clipping = peakInstant >= 0.98;
   document.getElementById('preamp-clip').classList.toggle('clipping', clipping);
   requestAnimationFrame(updatePreampMeter);
 }
@@ -1582,33 +1592,88 @@ let mixerAnimFrame = null;
 const STAGES = ['clip', 'insert', 'fader', 'aux', 'bus', 'master', 'limiter'];
 
 function createSynthSource() {
-  const osc1 = audioCtx.createOscillator();
-  const osc2 = audioCtx.createOscillator();
-  const osc3 = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  gain.gain.value = 0.15;
-  osc1.type = 'sawtooth';
-  osc1.frequency.value = 130.81; // C3
-  osc2.type = 'sine';
-  osc2.frequency.value = 164.81; // E3
-  osc3.type = 'triangle';
-  osc3.frequency.value = 196.0;  // G3
-  // Slow LFO for movement
+  // Lush 8-bar chord pad: Cmaj7 → Am7 → Fmaj7 → G7 (2 bars each)
+  // 4 voices of detuned saws through a warm lowpass with slow filter movement
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0;
+
+  const filter = audioCtx.createBiquadFilter();
+  filter.type = 'lowpass';
+  filter.frequency.value = 1100;
+  filter.Q.value = 0.8;
+  filter.connect(masterGain);
+
+  // Slow LFO on filter cutoff for gentle movement
   const lfo = audioCtx.createOscillator();
-  const lfoGain = audioCtx.createGain();
-  lfo.frequency.value = 0.3;
-  lfoGain.gain.value = 3;
-  lfo.connect(lfoGain);
-  lfoGain.connect(osc1.frequency);
-  lfoGain.connect(osc2.frequency);
-  osc1.connect(gain);
-  osc2.connect(gain);
-  osc3.connect(gain);
-  osc1.start();
-  osc2.start();
-  osc3.start();
+  const lfoAmt = audioCtx.createGain();
+  lfo.frequency.value = 0.12;
+  lfoAmt.gain.value = 350;
+  lfo.connect(lfoAmt);
+  lfoAmt.connect(filter.frequency);
   lfo.start();
-  return { output: gain, oscs: [osc1, osc2, osc3, lfo] };
+
+  // 4 voices, each is two detuned saws
+  const voices = [];
+  for (let v = 0; v < 4; v++) {
+    const o1 = audioCtx.createOscillator();
+    const o2 = audioCtx.createOscillator();
+    o1.type = 'sawtooth';
+    o2.type = 'sawtooth';
+    o1.detune.value = -6;
+    o2.detune.value = 6;
+    const vg = audioCtx.createGain();
+    vg.gain.value = 0.22;
+    o1.connect(vg);
+    o2.connect(vg);
+    vg.connect(filter);
+    o1.start();
+    o2.start();
+    voices.push({ o1, o2 });
+  }
+
+  // Chord progression — smooth voice leading
+  // I (Cmaj7) → vi (Am7) → IV (Fmaj7) → V7 (G7)
+  const chords = [
+    [261.63, 329.63, 392.00, 493.88], // Cmaj7: C4 E4 G4 B4
+    [220.00, 261.63, 329.63, 392.00], // Am7:   A3 C4 E4 G4
+    [174.61, 220.00, 261.63, 329.63], // Fmaj7: F3 A3 C4 E4
+    [196.00, 246.94, 293.66, 349.23]  // G7:    G3 B3 D4 F4
+  ];
+  const chordDuration = 2.0; // seconds per chord → 8 seconds total loop
+
+  // Set initial chord immediately
+  voices.forEach((voice, i) => {
+    voice.o1.frequency.value = chords[0][i];
+    voice.o2.frequency.value = chords[0][i];
+  });
+
+  let stopped = false;
+  let chordIdx = 1;
+  function scheduleNextChord() {
+    if (stopped) return;
+    const chord = chords[chordIdx % chords.length];
+    const t = audioCtx.currentTime;
+    voices.forEach((voice, i) => {
+      voice.o1.frequency.setTargetAtTime(chord[i], t, 0.12);
+      voice.o2.frequency.setTargetAtTime(chord[i], t, 0.12);
+    });
+    chordIdx++;
+    setTimeout(scheduleNextChord, chordDuration * 1000);
+  }
+  setTimeout(scheduleNextChord, chordDuration * 1000);
+
+  // Gentle fade-in so the pad doesn't thump on start
+  masterGain.gain.setValueAtTime(0, audioCtx.currentTime);
+  masterGain.gain.linearRampToValueAtTime(0.13, audioCtx.currentTime + 0.4);
+
+  const allOscs = [lfo];
+  voices.forEach(v => { allOscs.push(v.o1, v.o2); });
+
+  return {
+    output: masterGain,
+    oscs: allOscs,
+    stop: () => { stopped = true; }
+  };
 }
 
 function createDrumSource() {
@@ -1687,6 +1752,7 @@ async function startMixer() {
     stopMixer();
     return;
   }
+  stopAllAudioExcept('mixer');
 
   const sourceType = document.getElementById('mixer-source').value;
   if (sourceType === 'synth') mixerSource = createSynthSource();
@@ -1710,13 +1776,19 @@ async function startMixer() {
   clipper.curve = makeHardClipCurve();
   clipper.oversample = '4x';
 
-  // Aux reverb (simple delay-based)
-  const auxDelay = audioCtx.createDelay(0.5);
-  auxDelay.delayTime.value = 0.3;
-  const auxFeedback = audioCtx.createGain();
-  auxFeedback.gain.value = 0.3;
+  // Aux reverb (convolution, synthesized impulse response)
+  const auxReverb = audioCtx.createConvolver();
+  const irLen = Math.floor(audioCtx.sampleRate * 2.2);
+  const ir = audioCtx.createBuffer(2, irLen, audioCtx.sampleRate);
+  for (let ch = 0; ch < 2; ch++) {
+    const data = ir.getChannelData(ch);
+    for (let i = 0; i < irLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / irLen, 2.5);
+    }
+  }
+  auxReverb.buffer = ir;
   const auxReturn = audioCtx.createGain();
-  auxReturn.gain.value = 0.5;
+  auxReturn.gain.value = 0.8;
 
   // Analysers
   const analysers = {};
@@ -1733,12 +1805,10 @@ async function startMixer() {
   analysers.insert.connect(faderGain);
   faderGain.connect(analysers.fader);
 
-  // Aux send (post-fader)
+  // Aux send (post-fader) → reverb → return
   analysers.fader.connect(auxGain);
-  auxGain.connect(auxDelay);
-  auxDelay.connect(auxFeedback);
-  auxFeedback.connect(auxDelay);
-  auxDelay.connect(auxReturn);
+  auxGain.connect(auxReverb);
+  auxReverb.connect(auxReturn);
   auxGain.connect(analysers.aux);
 
   // Direct signal + aux return → bus
@@ -1752,7 +1822,7 @@ async function startMixer() {
   analysers.limiter.connect(clipper);
   clipper.connect(audioCtx.destination);
 
-  mixerNodes = { clipGain, insertGain, faderGain, auxGain, busGain, masterGain, limiter, clipper, auxDelay, auxFeedback, auxReturn };
+  mixerNodes = { clipGain, insertGain, faderGain, auxGain, busGain, masterGain, limiter, clipper, auxReverb, auxReturn };
   mixerAnalysers = analysers;
 
   // Set initial values from controls
@@ -1781,6 +1851,7 @@ function stopMixer() {
     document.getElementById('meter-' + s).style.height = '0%';
     document.getElementById('clip-ind-' + s).classList.remove('clipping');
     document.getElementById('stage-' + s).classList.remove('clipping');
+    delete meterBallistics['mix-' + s];
   });
 }
 
@@ -1806,22 +1877,41 @@ function updateMixerGains() {
   n.limiter.threshold.setTargetAtTime(limThresh, t, 0.02);
 }
 
+// Meter ballistics: fast attack, slow release — like a real PPM meter
+// Prevents flashy bouncing and gives a stable reading that tracks the true level
+const meterBallistics = {};
+function readAndSmoothMeter(analyser, key) {
+  const data = new Float32Array(analyser.fftSize);
+  analyser.getFloatTimeDomainData(data);
+  let peak = 0;
+  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+  const dbNow = gainToDb(peak);
+  const s = meterBallistics[key] || (meterBallistics[key] = { db: -60 });
+  if (dbNow > s.db) {
+    s.db = dbNow; // instant attack
+  } else {
+    // Release: ~30 dB/sec (=0.5 dB/frame at 60fps) for smooth fall
+    s.db = Math.max(dbNow, s.db - 0.5);
+  }
+  return { db: s.db, peakInstant: peak };
+}
+
 function updateMixerMeters() {
   if (!mixerPlaying) return;
-  STAGES.forEach(s => {
-    const analyser = mixerAnalysers[s];
-    if (!analyser) return;
-    const data = new Float32Array(analyser.fftSize);
-    analyser.getFloatTimeDomainData(data);
-    let peak = 0;
-    for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-    const db = gainToDb(peak);
-    const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
-    document.getElementById('meter-' + s).style.height = pct + '%';
-    const clipping = peak >= 0.95;
-    document.getElementById('clip-ind-' + s).classList.toggle('clipping', clipping);
-    document.getElementById('stage-' + s).classList.toggle('clipping', clipping);
-  });
+  try {
+    STAGES.forEach(s => {
+      const analyser = mixerAnalysers[s];
+      if (!analyser) return;
+      const { db, peakInstant } = readAndSmoothMeter(analyser, 'mix-' + s);
+      const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+      document.getElementById('meter-' + s).style.height = pct + '%';
+      const clipping = peakInstant >= 0.95;
+      document.getElementById('clip-ind-' + s).classList.toggle('clipping', clipping);
+      document.getElementById('stage-' + s).classList.toggle('clipping', clipping);
+    });
+  } catch (err) {
+    console.error('Mixer meter update error:', err);
+  }
   mixerAnimFrame = requestAnimationFrame(updateMixerMeters);
 }
 
@@ -1866,6 +1956,7 @@ let abLimiter = null;
 async function playABDemo(type) {
   stopABDemo();
   await initAudio();
+  stopAllAudioExcept('ab');
 
   const osc1 = audioCtx.createOscillator();
   const osc2 = audioCtx.createOscillator();
@@ -1932,6 +2023,7 @@ function stopABDemo() {
   if (abOsc) abOsc.forEach(o => { try { o.stop(); } catch(e){} });
   abOsc = null;
   abPlaying = false;
+  delete meterBallistics['ab'];
   document.getElementById('ab-meter-fill').style.width = '0%';
   document.getElementById('ab-meter-label').textContent = '—';
   document.getElementById('ab-clip').classList.remove('clipping');
@@ -1939,15 +2031,11 @@ function stopABDemo() {
 
 function updateABMeter() {
   if (!abPlaying || !abAnalyser) return;
-  const data = new Float32Array(abAnalyser.fftSize);
-  abAnalyser.getFloatTimeDomainData(data);
-  let peak = 0;
-  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-  const db = gainToDb(peak);
+  const { db, peakInstant } = readAndSmoothMeter(abAnalyser, 'ab');
   const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
   document.getElementById('ab-meter-fill').style.width = pct + '%';
   document.getElementById('ab-meter-label').textContent = db > -60 ? db.toFixed(1) + ' dB' : '—';
-  document.getElementById('ab-clip').classList.toggle('clipping', peak >= 0.95);
+  document.getElementById('ab-clip').classList.toggle('clipping', peakInstant >= 0.95);
   requestAnimationFrame(updateABMeter);
 }
 
@@ -2137,6 +2225,7 @@ async function startChallengeAudio(challengeId) {
     stopChallengeAudio(challengeId);
     return;
   }
+  stopAllAudioExcept('challenge-' + challengeId);
 
   const src = createSynthSource();
   const clipGain = audioCtx.createGain();
@@ -2184,21 +2273,22 @@ async function startChallengeAudio(challengeId) {
 
   function meterLoop() {
     if (!challengeAudio[challengeId]) return;
-    ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
-      const a = challengeAudio[challengeId].analysers[s];
-      const data = new Float32Array(a.fftSize);
-      a.getFloatTimeDomainData(data);
-      let peak = 0;
-      for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
-      const db = gainToDb(peak);
-      const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
-      const el = document.getElementById(`ch${challengeId}-meter-${s}`);
-      if (el) el.style.height = pct + '%';
-      const ci = document.getElementById(`ch${challengeId}-clip-${s}`);
-      if (ci) ci.classList.toggle('clipping', peak >= 0.95);
-      const st = document.getElementById(`ch${challengeId}-stage-${s}`);
-      if (st) st.classList.toggle('clipping', peak >= 0.95);
-    });
+    try {
+      ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
+        const a = challengeAudio[challengeId].analysers[s];
+        if (!a) return;
+        const { db, peakInstant } = readAndSmoothMeter(a, `ch${challengeId}-${s}`);
+        const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+        const el = document.getElementById(`ch${challengeId}-meter-${s}`);
+        if (el) el.style.height = pct + '%';
+        const ci = document.getElementById(`ch${challengeId}-clip-${s}`);
+        if (ci) ci.classList.toggle('clipping', peakInstant >= 0.95);
+        const st = document.getElementById(`ch${challengeId}-stage-${s}`);
+        if (st) st.classList.toggle('clipping', peakInstant >= 0.95);
+      });
+    } catch (err) {
+      console.error('Challenge meter error:', err);
+    }
     requestAnimationFrame(meterLoop);
   }
   meterLoop();
@@ -2208,6 +2298,7 @@ function stopChallengeAudio(challengeId) {
   const ca = challengeAudio[challengeId];
   if (!ca) return;
   if (ca.src && ca.src.oscs) ca.src.oscs.forEach(o => { try { o.stop(); } catch(e){} });
+  if (ca.src && ca.src.stop) ca.src.stop();
   delete challengeAudio[challengeId];
   const btn = document.querySelector(`.challenge-play[data-challenge="${challengeId}"]`);
   btn.textContent = '▶';
@@ -2219,6 +2310,7 @@ function stopChallengeAudio(challengeId) {
     if (ci) ci.classList.remove('clipping');
     const st = document.getElementById(`ch${challengeId}-stage-${s}`);
     if (st) st.classList.remove('clipping');
+    delete meterBallistics[`ch${challengeId}-${s}`];
   });
 }
 
