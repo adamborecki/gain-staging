@@ -1,0 +1,2580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gain Staging — Learn by Doing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a10;
+  --bg-raised: #12121c;
+  --bg-surface: #1a1a28;
+  --bg-inset: #0e0e16;
+  --border: rgba(255,255,255,0.08);
+  --border-strong: rgba(255,255,255,0.15);
+  --text: #e4e4eb;
+  --text-secondary: #9898a8;
+  --text-muted: #5a5a6e;
+  --accent: #6366f1;
+  --accent-hover: #818cf8;
+  --green: #22c55e;
+  --green-dim: rgba(34,197,94,0.15);
+  --yellow: #fbbf24;
+  --yellow-dim: rgba(251,191,36,0.15);
+  --red: #ef4444;
+  --red-dim: rgba(239,68,68,0.15);
+  --orange: #f97316;
+  --cyan: #06b6d4;
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout --- */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+section {
+  padding: 48px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+section:last-of-type { border-bottom: none; }
+
+/* --- Typography --- */
+h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1.2;
+  margin-bottom: 8px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 16px;
+  line-height: 1.3;
+}
+
+h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+p { margin-bottom: 12px; }
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--green), var(--cyan), var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.subtitle {
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+/* --- Cards & Surfaces --- */
+.card {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+
+.card-surface {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.callout {
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 16px 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.callout-info {
+  background: rgba(99,102,241,0.1);
+  border-left: 3px solid var(--accent);
+}
+
+.callout-warning {
+  background: var(--yellow-dim);
+  border-left: 3px solid var(--yellow);
+}
+
+.callout-danger {
+  background: var(--red-dim);
+  border-left: 3px solid var(--red);
+}
+
+.callout-success {
+  background: var(--green-dim);
+  border-left: 3px solid var(--green);
+}
+
+.going-deeper {
+  background: rgba(6,182,212,0.08);
+  border-left: 3px solid var(--cyan);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 16px 0;
+  font-size: 0.88rem;
+}
+
+.going-deeper-title {
+  font-weight: 600;
+  color: var(--cyan);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+/* --- Buttons --- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active { transform: scale(0.97); }
+
+.btn-primary {
+  background: var(--accent);
+  color: white;
+}
+
+.btn-primary:hover { background: var(--accent-hover); }
+
+.btn-secondary {
+  background: var(--bg-surface);
+  color: var(--text);
+  border: 1px solid var(--border-strong);
+}
+
+.btn-secondary:hover { background: rgba(255,255,255,0.08); }
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  border-radius: var(--radius-sm);
+}
+
+.btn-success {
+  background: var(--green);
+  color: white;
+}
+
+.btn-danger {
+  background: var(--red);
+  color: white;
+}
+
+/* --- Form Elements --- */
+input[type="text"], input[type="number"], textarea, select {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.9rem;
+  padding: 10px 12px;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+
+input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+textarea { resize: vertical; min-height: 60px; }
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 500;
+  margin-bottom: 6px;
+  color: var(--text-secondary);
+}
+
+/* --- Range Sliders --- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  background: var(--bg-inset);
+  border-radius: 3px;
+  outline: none;
+  border: none;
+  padding: 0;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+  box-shadow: 0 0 6px rgba(99,102,241,0.4);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bg);
+}
+
+/* --- Meters --- */
+.meter-container {
+  width: 100%;
+  height: 18px;
+  background: var(--bg-inset);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+}
+
+.meter-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.08s linear;
+  background: linear-gradient(90deg, var(--green) 0%, var(--green) 60%, var(--yellow) 80%, var(--red) 100%);
+}
+
+.meter-label {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+  pointer-events: none;
+}
+
+.meter-clip-indicator {
+  position: absolute;
+  right: 2px;
+  top: 2px;
+  width: 8px;
+  height: calc(100% - 4px);
+  border-radius: 2px;
+  background: var(--bg-inset);
+  transition: background 0.15s;
+}
+
+.meter-clip-indicator.clipping {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+/* Vertical meter */
+.meter-v-container {
+  width: 28px;
+  height: 120px;
+  background: var(--bg-inset);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.meter-v-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  border-radius: 3px;
+  transition: height 0.08s linear;
+  background: linear-gradient(0deg, var(--green) 0%, var(--green) 55%, var(--yellow) 75%, var(--red) 100%);
+}
+
+.meter-v-clip {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: calc(100% - 4px);
+  height: 6px;
+  border-radius: 2px;
+  background: var(--bg-surface);
+  transition: background 0.15s;
+}
+
+.meter-v-clip.clipping {
+  background: var(--red);
+  box-shadow: 0 0 8px var(--red);
+}
+
+/* --- Signal Chain Mixer --- */
+.mixer-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  padding-bottom: 8px;
+}
+
+.mixer {
+  display: flex;
+  gap: 8px;
+  min-width: min-content;
+  padding: 4px;
+}
+
+.mixer-stage {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  min-width: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.mixer-stage.clipping {
+  border-color: var(--red);
+  box-shadow: 0 0 12px var(--red-dim);
+}
+
+.mixer-stage .stage-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.mixer-stage .stage-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+  min-width: 48px;
+  text-align: center;
+}
+
+.mixer-arrow {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  padding: 0 2px;
+}
+
+/* --- Check Questions --- */
+.check-question {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin: 20px 0;
+}
+
+.check-question h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--cyan);
+}
+
+.check-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.check-option {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.check-option:hover { border-color: var(--accent); }
+
+.check-option.correct {
+  background: var(--green-dim);
+  border-color: var(--green);
+  color: var(--green);
+}
+
+.check-option.incorrect {
+  background: var(--red-dim);
+  border-color: var(--red);
+  color: var(--red);
+  opacity: 0.7;
+}
+
+.check-option:disabled { cursor: default; }
+
+.check-feedback {
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+  display: none;
+}
+
+.check-feedback.show { display: block; }
+
+.check-feedback.correct-fb {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+.check-feedback.incorrect-fb {
+  background: var(--red-dim);
+  color: var(--red);
+}
+
+/* --- Challenge Section --- */
+.challenge-card {
+  background: var(--bg-raised);
+  border: 2px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin: 20px 0;
+}
+
+.challenge-card.solved {
+  border-color: var(--green);
+}
+
+.challenge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.status-unsolved {
+  background: var(--yellow-dim);
+  color: var(--yellow);
+}
+
+.status-solved {
+  background: var(--green-dim);
+  color: var(--green);
+}
+
+/* --- Quiz --- */
+.quiz-progress {
+  height: 6px;
+  background: var(--bg-inset);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.quiz-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+.quiz-score {
+  font-size: 2.5rem;
+  font-weight: 800;
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* --- Audio Controls --- */
+.audio-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.play-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: none;
+  color: white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.play-btn:hover { background: var(--accent-hover); }
+.play-btn:active { transform: scale(0.95); }
+.play-btn.playing { background: var(--red); }
+
+/* --- Animations --- */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.fade-in { animation: fadeIn 0.4s ease; }
+.fade-in-up { animation: fadeInUp 0.5s ease; }
+
+/* --- Hero --- */
+#hero {
+  text-align: center;
+  padding: 60px 0 48px;
+}
+
+#hero h1 {
+  font-size: 2.4rem;
+  margin-bottom: 12px;
+}
+
+#hero .subtitle {
+  max-width: 500px;
+  margin: 0 auto 28px;
+}
+
+.name-input-wrap {
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.name-input-wrap input {
+  text-align: center;
+  font-size: 1rem;
+  padding: 12px 16px;
+}
+
+/* --- Section Numbers --- */
+.section-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 700;
+  margin-right: 10px;
+  flex-shrink: 0;
+}
+
+/* --- Paste Out --- */
+#paste-output {
+  background: var(--bg-inset);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-family: 'Courier New', monospace;
+  font-size: 0.82rem;
+  max-height: 500px;
+  overflow-y: auto;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+/* --- Responsive --- */
+@media (min-width: 600px) {
+  .container { padding: 0 24px; }
+  section { padding: 64px 0; }
+  h1 { font-size: 2.5rem; }
+  #hero h1 { font-size: 3rem; }
+  .card { padding: 24px; }
+  .mixer-stage { min-width: 110px; padding: 14px; }
+  .meter-v-container { height: 150px; }
+}
+
+@media (min-width: 900px) {
+  .container { padding: 0 32px; }
+  h1 { font-size: 2.8rem; }
+}
+
+/* --- Utility --- */
+.hidden { display: none !important; }
+.mb-0 { margin-bottom: 0; }
+.mb-8 { margin-bottom: 8px; }
+.mb-16 { margin-bottom: 16px; }
+.mb-24 { margin-bottom: 24px; }
+.mt-16 { margin-top: 16px; }
+.mt-24 { margin-top: 24px; }
+.text-center { text-align: center; }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-yellow { color: var(--yellow); }
+.text-muted { color: var(--text-muted); }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+.gap-8 { gap: 8px; }
+.gap-12 { gap: 12px; }
+
+/* stage flow indicators */
+.stage-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  width: 100%;
+}
+
+.flow-arrow {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+}
+
+/* slider row */
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.slider-row label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-width: 80px;
+  color: var(--text-secondary);
+}
+
+.slider-row .slider-val {
+  font-size: 0.82rem;
+  font-weight: 600;
+  min-width: 52px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.slider-row input[type="range"] {
+  flex: 1;
+}
+
+/* bypass toggle */
+.bypass-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.bypass-toggle input { display: none; }
+
+.bypass-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  transition: all 0.2s;
+}
+
+.bypass-toggle input:checked + .bypass-dot {
+  background: var(--green);
+  box-shadow: 0 0 6px var(--green);
+}
+
+/* AB demo buttons */
+.ab-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.ab-btn {
+  padding: 8px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-strong);
+  background: var(--bg-surface);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ab-btn:hover { border-color: var(--accent); }
+.ab-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* dark scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-inset); }
+::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+/* small waveform display */
+.waveform-display {
+  width: 100%;
+  height: 60px;
+  background: var(--bg-inset);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+/* chain diagram */
+.chain-diagram {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  margin: 16px 0;
+}
+
+.chain-step {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.chain-step.highlight {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.chain-arrow {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+/* section icon badge */
+.section-icon {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== HERO ==================== -->
+<section id="hero">
+  <div class="container">
+    <div class="section-icon">🎚️</div>
+    <h1><span class="gradient-text">Gain Staging</span></h1>
+    <p class="subtitle">An interactive guide to understanding gain structure — from preamp to master bus. Learn by doing, not just reading.</p>
+    <div class="name-input-wrap mb-24">
+      <input type="text" id="student-name" placeholder="Enter your name to get started">
+    </div>
+    <p class="text-muted" style="font-size:0.82rem;">Your name will appear on the summary you'll paste into Canvas at the end.</p>
+  </div>
+</section>
+
+<!-- ==================== 1. PREAMPS ==================== -->
+<section id="sec-preamp">
+  <div class="container">
+    <h2><span class="section-num">1</span>What Is a Preamp?</h2>
+    <p>A microphone puts out a very quiet electrical signal — <strong>mic level</strong>. Your audio interface (or mixing console) has a <strong>preamp</strong> that boosts it up to <strong>line level</strong>, where the rest of your gear and software can work with it.</p>
+    <p>The preamp gain knob is the <strong>first place you set your level</strong>, and it's the most important. Think of it as the foundation of your entire signal chain.</p>
+
+    <div class="callout callout-danger">
+      <strong>If it clips at the preamp, you're basically stuck.</strong> That distortion is baked into the recording. The only real fix is iZotope RX De-clip — and even that has limits. Get it right here.
+    </div>
+
+    <h3>The Goldilocks Zone</h3>
+    <p>Too quiet → you'll hear the noise floor (hiss). Too hot → the signal clips and distorts. You want it <em>just right</em> — loud enough to be well above the noise, with room to spare before clipping.</p>
+
+    <!-- Interactive: Preamp Gain Demo -->
+    <div class="card mt-16">
+      <h3>🎤 Try it: Preamp Gain</h3>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Drag the gain knob and listen. Watch the meter — when it goes red, you're clipping.</p>
+      <div class="audio-controls mb-16">
+        <button class="play-btn" id="preamp-play" aria-label="Play">▶</button>
+        <span style="font-size:0.82rem;color:var(--text-secondary);" id="preamp-play-label">Click to listen</span>
+      </div>
+      <div class="slider-row">
+        <label>Preamp Gain</label>
+        <input type="range" id="preamp-gain-slider" min="0" max="100" value="50">
+        <span class="slider-val" id="preamp-gain-val">+0 dB</span>
+      </div>
+      <div class="meter-container">
+        <div class="meter-fill" id="preamp-meter-fill" style="width:0%"></div>
+        <div class="meter-label" id="preamp-meter-label">-∞ dB</div>
+        <div class="meter-clip-indicator" id="preamp-clip"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--text-muted);margin-top:4px;">
+        <span>Noise floor</span>
+        <span>Goldilocks zone</span>
+        <span>Clipping!</span>
+      </div>
+    </div>
+
+    <div class="going-deeper">
+      <div class="going-deeper-title">Going Deeper</div>
+      With modern 24-bit recording and DAWs using 32-bit float internally, the noise floor is extremely low — much less of an issue than in the analog/16-bit days. But it still matters for <strong>live sound</strong>, <strong>dynamic mics</strong>, and <strong>quiet sources</strong> like soft-spoken dialogue. A clean, strong signal from the preamp always gives you the best starting point.
+    </div>
+
+    <!-- Check Question -->
+    <div class="check-question" data-answer="1" data-topic="preamp-clipping">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">You're recording a voice actor and notice the waveform looks like the tops and bottoms are chopped off flat. What happened?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">The noise floor is too high</button>
+        <button class="check-option" data-idx="1">The preamp gain is too hot — the signal is clipping</button>
+        <button class="check-option" data-idx="2">The fader is too low</button>
+        <button class="check-option" data-idx="3">The limiter is working correctly</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2. THE SIGNAL CHAIN ==================== -->
+<section id="sec-chain">
+  <div class="container">
+    <h2><span class="section-num">2</span>The Signal Chain in Your DAW</h2>
+    <p>From the moment audio enters your session to the moment it leaves your speakers, it passes through <strong>multiple stages</strong> where the level can change. Each one matters.</p>
+
+    <div class="chain-diagram">
+      <div class="chain-step">Clip Gain</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Inserts (EQ, Comp...)</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Channel Fader</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Aux Sends</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Mix Bus</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Master Bus</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step highlight">Limiter</div>
+    </div>
+
+    <h3>Stage by Stage</h3>
+
+    <div class="card-surface">
+      <h3>🎬 Clip Gain (Region Gain / Item Volume)</h3>
+      <p style="font-size:0.88rem;">This adjusts the level of individual audio clips <em>before</em> anything else on the channel. It's your first line of defense — use it to even out wildly different takes or normalize quiet recordings. Different DAWs call this different things: "region gain" in Logic, "item volume" in Reaper, "clip gain" in Pro Tools and Ableton.</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>🔌 Insert Effects</h3>
+      <p style="font-size:0.88rem;">EQ, compressors, de-essers, saturation — <strong>any plugin on your insert chain can add or subtract level</strong>. An EQ boost at 3kHz adds energy. A compressor with makeup gain can significantly change your output level. Always check your meters after each insert.</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>📊 Channel Fader</h3>
+      <p style="font-size:0.88rem;">The fader controls how loud this channel is <em>in the mix</em>. It comes <strong>after</strong> your inserts. If your insert chain is too hot, pulling the fader down doesn't undo the clipping that already happened at the plugin stage — it just makes the already-damaged signal quieter.</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>📡 Aux Sends</h3>
+      <p style="font-size:0.88rem;">Aux sends tap the signal and route a copy to an <strong>auxiliary bus</strong> — most commonly used for <strong>reverb and delay</strong>. The send level controls how much signal goes to the effect. The effect's return then feeds into your mix. If your send level is too hot, you can clip the reverb plugin's input. In <strong>live sound</strong>, aux sends are critical for <strong>monitor mixes</strong> — each performer can get their own custom mix via separate aux sends.</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>🚌 Mix Busses / Groups</h3>
+      <p style="font-size:0.88rem;">Busses (or groups) combine multiple channels — like all your drum tracks into a "drum bus," or all background vocals into a "BGV bus." When you sum channels together, the levels add up. Four tracks at -6 dBFS each will sum to roughly 0 dBFS on the bus — watch your bus levels!</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>🎛️ Master Bus</h3>
+      <p style="font-size:0.88rem;">Everything flows to the master. This is where you see the total level of your mix. If individual channels and busses are too hot, the master will clip. The master fader is your last volume control before output.</p>
+    </div>
+
+    <div class="card-surface">
+      <h3>🧱 Limiter (Last Plugin on Master)</h3>
+      <p style="font-size:0.88rem;">A limiter goes as the <strong>very last insert on the master bus</strong>. It's a hard ceiling — nothing gets louder than the threshold you set. We'll talk more about this in a later section.</p>
+    </div>
+
+    <div class="check-question" data-answer="2" data-topic="signal-chain-order">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">Your compressor insert is clipping. You pull the channel fader down to fix it. Does this solve the problem?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">Yes — the fader reduces the level going into the compressor</button>
+        <button class="check-option" data-idx="1">Yes — but only if the fader is set to pre-insert mode</button>
+        <button class="check-option" data-idx="2">No — the fader is after the inserts, so the compressor still gets the same hot signal</button>
+        <button class="check-option" data-idx="3">No — you need to bypass the compressor entirely</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 3. HEADROOM ==================== -->
+<section id="sec-headroom">
+  <div class="container">
+    <h2><span class="section-num">3</span>Headroom: Why Every Stage Matters</h2>
+    <p>The goal of gain staging is simple: <strong>keep healthy levels at every point in the chain</strong>. Not too hot, not too quiet. Leave room — <em>headroom</em> — so that when things get louder (a big chorus, a loud hit, a vocal peak), nothing clips.</p>
+
+    <div class="callout callout-success">
+      <strong>Rule of thumb:</strong> Aim for peaks somewhere around <strong>-10 to -6 dBFS</strong> on individual tracks. This isn't a strict rule — it's a comfortable zone that leaves room to mix without things piling up at the master.
+    </div>
+
+    <p>Think of it like packing a suitcase. If every item is crammed to the max, you can't fit anything else and the zipper breaks. Leave some room in each layer, and everything fits together cleanly.</p>
+
+    <h3>The Cascade Effect</h3>
+    <p>Bad gain staging <strong>cascades down the chain</strong>. If clip gain is too hot:</p>
+    <ul style="margin-left:20px;margin-bottom:16px;font-size:0.92rem;">
+      <li>Your insert plugins receive a signal that's too loud</li>
+      <li>The compressor might compress too aggressively (or clip)</li>
+      <li>The EQ boosts push it even hotter</li>
+      <li>The channel fader can't save you — the damage is already done</li>
+      <li>The bus sums everything louder than expected</li>
+      <li>The master clips, and the limiter works overtime</li>
+    </ul>
+
+    <p>Good gain staging means <strong>each stage passes a clean, healthy signal to the next</strong>.</p>
+
+    <div class="going-deeper">
+      <div class="going-deeper-title">Going Deeper</div>
+      Modern DAWs process audio internally in <strong>32-bit floating point</strong>, which means they have virtually unlimited internal headroom — they won't technically "clip" between plugins the way analog gear does. But this doesn't mean you can be sloppy. Plugins are often modeled to sound best at certain input levels, and your meters, ears, and master output are all still working in the real world where 0 dBFS is the ceiling.
+    </div>
+
+    <div class="check-question" data-answer="1" data-topic="headroom">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">You have 8 vocal tracks, each peaking at -3 dBFS. When you bus them together, what's likely to happen?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">The bus will be at about -3 dBFS — busses don't add levels</button>
+        <button class="check-option" data-idx="1">The bus will be significantly hotter than -3 dBFS and may clip — levels add up when you sum signals</button>
+        <button class="check-option" data-idx="2">The bus will be quieter because the signals cancel each other out</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4. COMPRESSORS & EQ ==================== -->
+<section id="sec-compressors">
+  <div class="container">
+    <h2><span class="section-num">4</span>Compressors & EQ: They Change Your Levels</h2>
+    <p>A compressor reduces <strong>dynamic range</strong> — it makes the loud parts quieter (and/or the quiet parts louder, via makeup gain). It's one of the most-used tools in mixing.</p>
+    <p>The key gain staging takeaway: <strong>a compressor changes the level going to the next stage</strong>. The signal goes in at one level, and comes out at a different level — usually quieter (due to compression) plus louder (due to makeup gain). That's why it's part of the gain staging conversation.</p>
+
+    <div class="card mt-16">
+      <h3>How a Compressor Affects Level</h3>
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:0.88rem;">
+        <div style="flex:1;min-width:200px;">
+          <p><strong>Signal goes in →</strong></p>
+          <p>Peaks at, say, -6 dBFS with lots of dynamic range (quiet parts are quiet, loud parts are loud).</p>
+        </div>
+        <div style="flex:1;min-width:200px;">
+          <p><strong>→ Signal comes out</strong></p>
+          <p>Dynamic range reduced. With makeup gain, the average level might now be <em>higher</em> than what went in — even though the peaks are controlled.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout callout-info mt-16">
+      <strong>EQ changes levels too.</strong> A +6 dB boost at 3kHz adds energy to the signal — the overall level goes up. A cut does the opposite. Always check your meters after EQ moves, especially big boosts.
+    </div>
+
+    <div class="going-deeper">
+      <div class="going-deeper-title">Going Deeper</div>
+      You don't need to memorize ratios, attack, and release times for this lesson. Just know: a compressor is a <strong>gain-changing element</strong> in your signal chain, not magic. Every time you add one, ask yourself: "What level is going in? What level is coming out? Is that healthy for the next thing in the chain?"
+    </div>
+
+    <div class="check-question" data-answer="2" data-topic="compressor-gain">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">You add a compressor to a vocal track and turn up the makeup gain by 6 dB. What should you check next?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">Whether the compressor ratio is correct</button>
+        <button class="check-option" data-idx="1">Whether the attack time is fast enough</button>
+        <button class="check-option" data-idx="2">Whether the output level is still healthy for the next plugin/stage in the chain</button>
+        <button class="check-option" data-idx="3">Whether the EQ is bypassed</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5. THE LIMITER ==================== -->
+<section id="sec-limiter">
+  <div class="container">
+    <h2><span class="section-num">5</span>The Limiter on the Master</h2>
+    <p>A <strong>limiter</strong> is essentially a compressor with an extreme ratio (∞:1). Nothing gets past the threshold you set. It goes as the <strong>very last plugin on your master bus</strong> — it's your safety net and your loudness tool.</p>
+
+    <h3>What it does</h3>
+    <p>The limiter catches peaks that would otherwise clip your output and squashes them down. It ensures your final output never exceeds a set ceiling (usually -0.1 or -0.3 dBFS for streaming, -1.0 dBFS for broadcast).</p>
+
+    <h3>What it's NOT</h3>
+    <div class="callout callout-warning">
+      <strong>A limiter is not a substitute for good gain staging.</strong> If your mix is 6 dB too hot coming into the limiter, it's working overtime — squashing dynamics, adding distortion, making everything sound flat and crushed. The limiter should be doing a few dB of gain reduction at most, not holding back a tidal wave.
+    </div>
+
+    <div class="callout callout-info">
+      <strong>The "quick patch" trap:</strong> Modern DAWs have tons of internal headroom (32-bit float), so you <em>can</em> just turn down the gain before the limiter and it'll technically work. But this is a band-aid, not good practice. You're still missing out on plugins behaving at their sweet spot, and your faders are all in weird positions. Fix the gain staging from the source — don't just patch it at the end.
+    </div>
+
+    <div class="check-question" data-answer="1" data-topic="limiter-purpose">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">Your master limiter is showing 10+ dB of gain reduction constantly. What's the best course of action?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">Turn up the limiter threshold so it's not working as hard</button>
+        <button class="check-option" data-idx="1">Go back upstream and reduce levels at the channel/bus level so less signal hits the limiter</button>
+        <button class="check-option" data-idx="2">It's fine — that's what limiters are for</button>
+        <button class="check-option" data-idx="3">Add another limiter before it to share the workload</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6. LIVE SOUND ==================== -->
+<section id="sec-live">
+  <div class="container">
+    <h2><span class="section-num">6</span>Live Sound: Same Principles, Higher Stakes</h2>
+    <p>Everything you've learned applies to live sound — in fact, it's even <strong>more critical</strong> because there's no "undo." The audience hears your gain staging mistakes in real time.</p>
+
+    <div class="chain-diagram">
+      <div class="chain-step">Preamp (Trim/Gain)</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Channel EQ & Inserts</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Channel Fader</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Aux Sends (Monitors)</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step">Group/VCA</div>
+      <span class="chain-arrow">→</span>
+      <div class="chain-step highlight">Mains</div>
+    </div>
+
+    <p>On a live console, the <strong>gain (or trim) knob</strong> at the top of each channel strip is your preamp. This is where you set the initial level — same Goldilocks concept. Too hot and you clip the channel; too quiet and you fight the noise floor (which is a much bigger deal in live venues with long cable runs and ambient noise).</p>
+
+    <h3>Aux Sends for Monitors</h3>
+    <p>In live sound, aux sends aren't just for reverb — they're how you build <strong>monitor mixes</strong>. Each performer can get a different blend sent to their in-ear monitors or wedge. If your gain staging is wrong at the preamp, it cascades into every monitor send, not just the mains. One bad preamp setting can ruin the experience for every performer on stage.</p>
+
+    <div class="callout callout-warning">
+      <strong>Preamps ≠ Power Amps.</strong> Don't confuse the preamp (which boosts mic-level signals to line-level) with a <strong>power amplifier</strong> (which drives passive speakers). They're completely different stages. A power amp takes the line-level output from your console's mains and amplifies it enough to physically move speaker cones. Cranking a power amp doesn't fix a bad preamp setting — it just makes a bad signal louder (and can damage speakers). On powered/active speakers, the power amp is built in.
+    </div>
+
+    <div class="going-deeper">
+      <div class="going-deeper-title">Going Deeper</div>
+      VCAs (Voltage Controlled Amplifiers) on live consoles work similarly to bus faders — they control the level of a group of channels — but they don't actually sum the audio. They remotely control the faders assigned to them. This is a live sound workflow detail, but the gain staging principle is the same: control levels at every stage.
+    </div>
+
+    <div class="check-question" data-answer="0" data-topic="live-sound">
+      <h4>✓ Check Your Understanding</h4>
+      <p style="font-size:0.88rem;margin-bottom:10px;">On a live console, you set the preamp gain too low for the kick drum mic. What's the best fix?</p>
+      <div class="check-options">
+        <button class="check-option" data-idx="0">Turn up the preamp gain to a healthy level</button>
+        <button class="check-option" data-idx="1">Push the channel fader all the way up to compensate</button>
+        <button class="check-option" data-idx="2">Turn up the power amp for the mains</button>
+        <button class="check-option" data-idx="3">Add a compressor to bring up the level</button>
+      </div>
+      <div class="check-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7. INTERACTIVE MIXER ==================== -->
+<section id="sec-mixer">
+  <div class="container">
+    <h2><span class="section-num">7</span>The Interactive Mixer</h2>
+    <p>Now put it all together. This is a full signal chain you can manipulate — play the audio, drag the controls, and watch how changes at one stage cascade to every stage after it.</p>
+
+    <div class="card">
+      <div class="audio-controls mb-16">
+        <button class="play-btn" id="mixer-play" aria-label="Play">▶</button>
+        <span style="font-size:0.85rem;font-weight:500;" id="mixer-play-label">Play to start</span>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+          <label class="label" for="mixer-source">Source:</label>
+          <select id="mixer-source" style="width:auto;padding:6px 10px;font-size:0.82rem;">
+            <option value="synth">Synth Pad</option>
+            <option value="drums">Drum Loop</option>
+            <option value="noise">Pink Noise</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Mixer stages -->
+      <div class="mixer-wrapper">
+        <div class="mixer" id="mixer-strip">
+          <!-- Clip Gain -->
+          <div class="mixer-stage" id="stage-clip">
+            <div class="stage-label">Clip Gain</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-clip"></div>
+              <div class="meter-v-clip" id="clip-ind-clip"></div>
+            </div>
+            <input type="range" id="ctrl-clip" min="-24" max="24" value="0" style="width:80px;writing-mode:horizontal-tb;">
+            <div class="stage-value" id="val-clip">0 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Insert -->
+          <div class="mixer-stage" id="stage-insert">
+            <div class="stage-label">Insert (EQ)</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-insert"></div>
+              <div class="meter-v-clip" id="clip-ind-insert"></div>
+            </div>
+            <label class="bypass-toggle">
+              <input type="checkbox" id="ctrl-insert-active" checked>
+              <div class="bypass-dot"></div>
+              Active
+            </label>
+            <input type="range" id="ctrl-insert" min="-12" max="12" value="3" style="width:80px;">
+            <div class="stage-value" id="val-insert">+3 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Channel Fader -->
+          <div class="mixer-stage" id="stage-fader">
+            <div class="stage-label">Ch. Fader</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-fader"></div>
+              <div class="meter-v-clip" id="clip-ind-fader"></div>
+            </div>
+            <input type="range" id="ctrl-fader" min="-60" max="6" value="0" style="width:80px;">
+            <div class="stage-value" id="val-fader">0 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Aux Send -->
+          <div class="mixer-stage" id="stage-aux">
+            <div class="stage-label">Aux Send</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-aux"></div>
+              <div class="meter-v-clip" id="clip-ind-aux"></div>
+            </div>
+            <input type="range" id="ctrl-aux" min="-60" max="6" value="-12" style="width:80px;">
+            <div class="stage-value" id="val-aux">-12 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Bus -->
+          <div class="mixer-stage" id="stage-bus">
+            <div class="stage-label">Mix Bus</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-bus"></div>
+              <div class="meter-v-clip" id="clip-ind-bus"></div>
+            </div>
+            <input type="range" id="ctrl-bus" min="-24" max="6" value="0" style="width:80px;">
+            <div class="stage-value" id="val-bus">0 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Master -->
+          <div class="mixer-stage" id="stage-master">
+            <div class="stage-label">Master</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-master"></div>
+              <div class="meter-v-clip" id="clip-ind-master"></div>
+            </div>
+            <input type="range" id="ctrl-master" min="-24" max="6" value="0" style="width:80px;">
+            <div class="stage-value" id="val-master">0 dB</div>
+          </div>
+          <div class="mixer-arrow">→</div>
+          <!-- Limiter -->
+          <div class="mixer-stage" id="stage-limiter">
+            <div class="stage-label">Limiter</div>
+            <div class="meter-v-container">
+              <div class="meter-v-fill" id="meter-limiter"></div>
+              <div class="meter-v-clip" id="clip-ind-limiter"></div>
+            </div>
+            <input type="range" id="ctrl-limiter-thresh" min="-24" max="0" value="-1" style="width:80px;">
+            <div class="stage-value" id="val-limiter">-1 dB</div>
+            <div style="font-size:0.68rem;color:var(--text-muted);">Threshold</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-info" style="margin-top:16px;">
+        <strong>Try this:</strong> Crank the clip gain to +20 dB and watch how every meter after it lights up red. Then bring it back and raise the insert gain instead. Notice how the fader can't fix clipping that happened upstream.
+      </div>
+    </div>
+
+    <!-- Audio A/B Demo -->
+    <div class="card mt-16">
+      <h3>👂 Hear the Difference</h3>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:14px;">Click each button to hear what different gain staging sounds like. Listen for distortion and harshness in the hot/clipping examples.</p>
+      <div class="ab-buttons" id="ab-buttons">
+        <button class="ab-btn" data-demo="clean">🟢 Clean (-8 dB)</button>
+        <button class="ab-btn" data-demo="hot">🟡 Slightly Hot (-1 dB)</button>
+        <button class="ab-btn" data-demo="clipping">🔴 Clipping (+6 dB)</button>
+        <button class="ab-btn" data-demo="crushed">💀 Limiter Crushed</button>
+      </div>
+      <div class="meter-container mt-16">
+        <div class="meter-fill" id="ab-meter-fill" style="width:0%"></div>
+        <div class="meter-label" id="ab-meter-label">—</div>
+        <div class="meter-clip-indicator" id="ab-clip"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8. FIX THIS MIX CHALLENGES ==================== -->
+<section id="sec-challenges">
+  <div class="container">
+    <h2><span class="section-num">8</span>Fix This Mix</h2>
+    <p>Each challenge presents a broken gain structure. Your job: fix it so the signal is clean at every stage and the master isn't clipping. Green meters = good. Red = bad.</p>
+
+    <!-- Challenge 1 -->
+    <div class="challenge-card" id="challenge-1">
+      <div class="challenge-status status-unsolved" id="challenge-1-status">⏳ Unsolved</div>
+      <h3>Challenge 1: The Overcooked Preamp</h3>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Someone cranked the clip gain way too high and pulled the fader down to compensate. The insert is clipping even though the output sounds "fine." Fix the gain staging so no stage clips.</p>
+      <div class="audio-controls mb-16">
+        <button class="play-btn challenge-play" data-challenge="1" aria-label="Play">▶</button>
+        <span style="font-size:0.82rem;color:var(--text-secondary);">Play to hear the problem</span>
+        <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="resetChallenge(1)">Reset</button>
+      </div>
+      <div class="mixer-wrapper">
+        <div class="mixer challenge-mixer" id="challenge-1-mixer"></div>
+      </div>
+      <div class="check-feedback" id="challenge-1-feedback"></div>
+    </div>
+
+    <!-- Challenge 2 -->
+    <div class="challenge-card" id="challenge-2">
+      <div class="challenge-status status-unsolved" id="challenge-2-status">⏳ Unsolved</div>
+      <h3>Challenge 2: The Whisper Treatment</h3>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Everything is recorded way too quiet. Someone smashed the limiter threshold down to make it loud enough. The result: no dynamics, everything sounds crushed. Fix it from the source.</p>
+      <div class="audio-controls mb-16">
+        <button class="play-btn challenge-play" data-challenge="2" aria-label="Play">▶</button>
+        <span style="font-size:0.82rem;color:var(--text-secondary);">Play to hear the problem</span>
+        <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="resetChallenge(2)">Reset</button>
+      </div>
+      <div class="mixer-wrapper">
+        <div class="mixer challenge-mixer" id="challenge-2-mixer"></div>
+      </div>
+      <div class="check-feedback" id="challenge-2-feedback"></div>
+    </div>
+
+    <!-- Challenge 3 -->
+    <div class="challenge-card" id="challenge-3">
+      <div class="challenge-status status-unsolved" id="challenge-3-status">⏳ Unsolved</div>
+      <h3>Challenge 3: The Everything Louder</h3>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Every stage is set too hot — clip gain, insert, bus, master — and the limiter is working overtime with 10+ dB of gain reduction. Bring it all under control without making the output silent.</p>
+      <div class="audio-controls mb-16">
+        <button class="play-btn challenge-play" data-challenge="3" aria-label="Play">▶</button>
+        <span style="font-size:0.82rem;color:var(--text-secondary);">Play to hear the problem</span>
+        <button class="btn btn-sm btn-secondary" style="margin-left:auto;" onclick="resetChallenge(3)">Reset</button>
+      </div>
+      <div class="mixer-wrapper">
+        <div class="mixer challenge-mixer" id="challenge-3-mixer"></div>
+      </div>
+      <div class="check-feedback" id="challenge-3-feedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 9. QUIZ ==================== -->
+<section id="sec-quiz">
+  <div class="container">
+    <h2><span class="section-num">9</span>Final Quiz</h2>
+    <p>Test your understanding. 10 questions — see how many you can get right.</p>
+
+    <div class="card" id="quiz-container">
+      <div id="quiz-start">
+        <p style="text-align:center;margin-bottom:16px;">Ready when you are.</p>
+        <div class="text-center">
+          <button class="btn btn-primary" id="quiz-start-btn">Start Quiz</button>
+        </div>
+      </div>
+      <div id="quiz-active" class="hidden">
+        <div class="quiz-progress">
+          <div class="quiz-progress-fill" id="quiz-progress-fill" style="width:0%"></div>
+        </div>
+        <p class="label mb-8" id="quiz-counter">Question 1 of 10</p>
+        <p style="font-size:1rem;font-weight:500;margin-bottom:16px;" id="quiz-question"></p>
+        <div class="check-options" id="quiz-options"></div>
+        <div class="check-feedback" id="quiz-feedback"></div>
+        <div class="text-center mt-16">
+          <button class="btn btn-primary hidden" id="quiz-next-btn">Next →</button>
+        </div>
+      </div>
+      <div id="quiz-results" class="hidden">
+        <div class="quiz-score"><span id="quiz-score-num">0</span>/10</div>
+        <p class="text-center mb-16" id="quiz-result-msg"></p>
+        <div class="text-center">
+          <button class="btn btn-secondary" id="quiz-retry-btn">Try Again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 10. CANVAS PASTE-OUT ==================== -->
+<section id="sec-submit">
+  <div class="container">
+    <h2><span class="section-num">10</span>Canvas Submission</h2>
+    <p>Almost done! Fill in the reflections below, then generate your summary to paste into Canvas.</p>
+
+    <div class="card">
+      <div class="form-group">
+        <label for="reflect-1">In your own words, why does it matter <em>where</em> in the chain you reduce gain?</label>
+        <textarea id="reflect-1" rows="3" placeholder="Think about what happens when you just pull the fader down vs. fixing it at the source..."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="reflect-2">What's one thing about gain staging you didn't know before this lesson?</label>
+        <textarea id="reflect-2" rows="3" placeholder="Be specific — mention a concept, stage, or interaction that surprised you."></textarea>
+      </div>
+      <div class="form-group">
+        <label for="reflect-3">How would you explain the difference between a preamp and a power amp to a classmate?</label>
+        <textarea id="reflect-3" rows="3" placeholder="Simple, in your own words."></textarea>
+      </div>
+
+      <div class="text-center mt-24">
+        <button class="btn btn-primary" id="generate-summary-btn" style="font-size:1rem;padding:14px 32px;">Generate Summary</button>
+      </div>
+
+      <div id="summary-output-wrap" class="hidden mt-24">
+        <h3 class="mb-8">Your Summary</h3>
+        <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:12px;">Copy everything below and paste it into your Canvas assignment.</p>
+        <pre id="paste-output"></pre>
+        <div class="text-center mt-16">
+          <button class="btn btn-success" id="copy-summary-btn">📋 Copy to Clipboard</button>
+        </div>
+        <p class="text-center text-muted mt-16" style="font-size:0.78rem;" id="copy-confirm"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer style="text-align:center;padding:32px 16px;color:var(--text-muted);font-size:0.78rem;">
+  Gain Staging — An interactive learning tool by Adam Borecki
+</footer>
+
+<!-- ==================== JAVASCRIPT ==================== -->
+<script>
+// ============================================================
+//  AUDIO ENGINE
+// ============================================================
+let audioCtx = null;
+let isAudioInit = false;
+
+async function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') {
+    await audioCtx.resume();
+  }
+  isAudioInit = true;
+}
+
+function dbToGain(db) {
+  if (db <= -60) return 0;
+  return Math.pow(10, db / 20);
+}
+
+function gainToDb(g) {
+  if (g <= 0.00001) return -Infinity;
+  return 20 * Math.log10(g);
+}
+
+// ============================================================
+//  PREAMP DEMO
+// ============================================================
+let preampOsc = null;
+let preampGain = null;
+let preampAnalyser = null;
+let preampClipNode = null;
+let preampPlaying = false;
+
+async function startPreampDemo() {
+  await initAudio();
+  if (preampPlaying) {
+    stopPreampDemo();
+    return;
+  }
+  preampOsc = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const merge = audioCtx.createGain();
+  merge.gain.value = 0.3;
+  preampOsc.type = 'sawtooth';
+  preampOsc.frequency.value = 220;
+  osc2.type = 'sine';
+  osc2.frequency.value = 221;
+  preampGain = audioCtx.createGain();
+  preampGain.gain.value = dbToGain(sliderToDb(50));
+  // waveshaper for clipping
+  preampClipNode = audioCtx.createWaveShaper();
+  preampClipNode.curve = makeClipCurve(1.0);
+  preampClipNode.oversample = '4x';
+  preampAnalyser = audioCtx.createAnalyser();
+  preampAnalyser.fftSize = 2048;
+  preampOsc.connect(merge);
+  osc2.connect(merge);
+  merge.connect(preampGain);
+  preampGain.connect(preampClipNode);
+  preampClipNode.connect(preampAnalyser);
+  preampAnalyser.connect(audioCtx.destination);
+  preampOsc.start();
+  osc2.start();
+  preampPlaying = true;
+  document.getElementById('preamp-play').textContent = '⏹';
+  document.getElementById('preamp-play').classList.add('playing');
+  document.getElementById('preamp-play-label').textContent = 'Playing — drag the gain';
+  requestAnimationFrame(updatePreampMeter);
+}
+
+function stopPreampDemo() {
+  if (preampOsc) { try { preampOsc.stop(); } catch(e){} }
+  preampOsc = null;
+  preampPlaying = false;
+  document.getElementById('preamp-play').textContent = '▶';
+  document.getElementById('preamp-play').classList.remove('playing');
+  document.getElementById('preamp-play-label').textContent = 'Click to listen';
+  document.getElementById('preamp-meter-fill').style.width = '0%';
+  document.getElementById('preamp-meter-label').textContent = '-∞ dB';
+  document.getElementById('preamp-clip').classList.remove('clipping');
+}
+
+function sliderToDb(val) {
+  // 0-100 slider: 0=-40dB, 50=0dB, 100=+24dB
+  if (val <= 50) return -40 + (val / 50) * 40;
+  return ((val - 50) / 50) * 24;
+}
+
+document.getElementById('preamp-play').addEventListener('click', startPreampDemo);
+
+document.getElementById('preamp-gain-slider').addEventListener('input', function() {
+  const db = sliderToDb(parseFloat(this.value));
+  document.getElementById('preamp-gain-val').textContent = (db >= 0 ? '+' : '') + db.toFixed(0) + ' dB';
+  if (preampGain) {
+    preampGain.gain.setTargetAtTime(dbToGain(db), audioCtx.currentTime, 0.02);
+  }
+});
+
+function updatePreampMeter() {
+  if (!preampPlaying || !preampAnalyser) return;
+  const data = new Float32Array(preampAnalyser.fftSize);
+  preampAnalyser.getFloatTimeDomainData(data);
+  let peak = 0;
+  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+  const db = gainToDb(peak);
+  const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+  document.getElementById('preamp-meter-fill').style.width = pct + '%';
+  document.getElementById('preamp-meter-label').textContent = db > -60 ? db.toFixed(1) + ' dB' : '-∞ dB';
+  const clipping = peak >= 0.98;
+  document.getElementById('preamp-clip').classList.toggle('clipping', clipping);
+  requestAnimationFrame(updatePreampMeter);
+}
+
+// ============================================================
+//  WAVE SHAPER (Clipping Simulation)
+// ============================================================
+function makeClipCurve(threshold) {
+  const n = 8192;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    if (x > threshold) curve[i] = threshold + (x - threshold) * 0.1;
+    else if (x < -threshold) curve[i] = -threshold + (x + threshold) * 0.1;
+    else curve[i] = x;
+  }
+  return curve;
+}
+
+function makeHardClipCurve() {
+  const n = 8192;
+  const curve = new Float32Array(n);
+  for (let i = 0; i < n; i++) {
+    const x = (i * 2) / n - 1;
+    curve[i] = Math.max(-1, Math.min(1, x));
+  }
+  return curve;
+}
+
+// ============================================================
+//  MAIN INTERACTIVE MIXER
+// ============================================================
+let mixerNodes = {};
+let mixerPlaying = false;
+let mixerSource = null;
+let mixerAnalysers = {};
+let mixerAnimFrame = null;
+
+const STAGES = ['clip', 'insert', 'fader', 'aux', 'bus', 'master', 'limiter'];
+
+function createSynthSource() {
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const osc3 = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.15;
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 130.81; // C3
+  osc2.type = 'sine';
+  osc2.frequency.value = 164.81; // E3
+  osc3.type = 'triangle';
+  osc3.frequency.value = 196.0;  // G3
+  // Slow LFO for movement
+  const lfo = audioCtx.createOscillator();
+  const lfoGain = audioCtx.createGain();
+  lfo.frequency.value = 0.3;
+  lfoGain.gain.value = 3;
+  lfo.connect(lfoGain);
+  lfoGain.connect(osc1.frequency);
+  lfoGain.connect(osc2.frequency);
+  osc1.connect(gain);
+  osc2.connect(gain);
+  osc3.connect(gain);
+  osc1.start();
+  osc2.start();
+  osc3.start();
+  lfo.start();
+  return { output: gain, oscs: [osc1, osc2, osc3, lfo] };
+}
+
+function createDrumSource() {
+  // Simple kick + hi-hat pattern using oscillators and noise
+  const masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.3;
+  let stopped = false;
+
+  function schedulePattern() {
+    if (stopped) return;
+    const now = audioCtx.currentTime;
+    for (let i = 0; i < 4; i++) {
+      const t = now + i * 0.5;
+      // Kick
+      const kickOsc = audioCtx.createOscillator();
+      const kickGain = audioCtx.createGain();
+      kickOsc.frequency.setValueAtTime(150, t);
+      kickOsc.frequency.exponentialRampToValueAtTime(40, t + 0.1);
+      kickGain.gain.setValueAtTime(0.8, t);
+      kickGain.gain.exponentialRampToValueAtTime(0.01, t + 0.2);
+      kickOsc.connect(kickGain);
+      kickGain.connect(masterGain);
+      kickOsc.start(t);
+      kickOsc.stop(t + 0.2);
+      // Hi-hat on offbeats
+      if (i % 1 === 0) {
+        const hatBuffer = audioCtx.createBuffer(1, audioCtx.sampleRate * 0.05, audioCtx.sampleRate);
+        const hatData = hatBuffer.getChannelData(0);
+        for (let j = 0; j < hatData.length; j++) hatData[j] = (Math.random() * 2 - 1) * 0.3;
+        const hat = audioCtx.createBufferSource();
+        hat.buffer = hatBuffer;
+        const hatGain = audioCtx.createGain();
+        hatGain.gain.setValueAtTime(0.3, t + 0.25);
+        hatGain.gain.exponentialRampToValueAtTime(0.01, t + 0.3);
+        hat.connect(hatGain);
+        hatGain.connect(masterGain);
+        hat.start(t + 0.25);
+      }
+    }
+    setTimeout(schedulePattern, 1900);
+  }
+  schedulePattern();
+  return { output: masterGain, stop: () => { stopped = true; } };
+}
+
+function createNoiseSource() {
+  // Pink-ish noise
+  const bufferSize = audioCtx.sampleRate * 2;
+  const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+  const data = buffer.getChannelData(0);
+  let b0=0, b1=0, b2=0, b3=0, b4=0, b5=0, b6=0;
+  for (let i = 0; i < bufferSize; i++) {
+    const white = Math.random() * 2 - 1;
+    b0 = 0.99886 * b0 + white * 0.0555179;
+    b1 = 0.99332 * b1 + white * 0.0750759;
+    b2 = 0.96900 * b2 + white * 0.1538520;
+    b3 = 0.86650 * b3 + white * 0.3104856;
+    b4 = 0.55000 * b4 + white * 0.5329522;
+    b5 = -0.7616 * b5 - white * 0.0168980;
+    data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.04;
+    b6 = white * 0.115926;
+  }
+  const src = audioCtx.createBufferSource();
+  src.buffer = buffer;
+  src.loop = true;
+  const gain = audioCtx.createGain();
+  gain.gain.value = 0.2;
+  src.connect(gain);
+  src.start();
+  return { output: gain, oscs: [src] };
+}
+
+async function startMixer() {
+  await initAudio();
+  if (mixerPlaying) {
+    stopMixer();
+    return;
+  }
+
+  const sourceType = document.getElementById('mixer-source').value;
+  if (sourceType === 'synth') mixerSource = createSynthSource();
+  else if (sourceType === 'drums') mixerSource = createDrumSource();
+  else mixerSource = createNoiseSource();
+
+  // Build chain: source → clipGain → insertGain → faderGain → split(aux) → busGain → masterGain → limiter → clipper → dest
+  const clipGain = audioCtx.createGain();
+  const insertGain = audioCtx.createGain();
+  const faderGain = audioCtx.createGain();
+  const auxGain = audioCtx.createGain();
+  const busGain = audioCtx.createGain();
+  const masterGain = audioCtx.createGain();
+  const limiter = audioCtx.createDynamicsCompressor();
+  limiter.threshold.value = -1;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  const clipper = audioCtx.createWaveShaper();
+  clipper.curve = makeHardClipCurve();
+  clipper.oversample = '4x';
+
+  // Aux reverb (simple delay-based)
+  const auxDelay = audioCtx.createDelay(0.5);
+  auxDelay.delayTime.value = 0.3;
+  const auxFeedback = audioCtx.createGain();
+  auxFeedback.gain.value = 0.3;
+  const auxReturn = audioCtx.createGain();
+  auxReturn.gain.value = 0.5;
+
+  // Analysers
+  const analysers = {};
+  STAGES.forEach(s => {
+    analysers[s] = audioCtx.createAnalyser();
+    analysers[s].fftSize = 2048;
+  });
+
+  // Connect chain
+  mixerSource.output.connect(clipGain);
+  clipGain.connect(analysers.clip);
+  analysers.clip.connect(insertGain);
+  insertGain.connect(analysers.insert);
+  analysers.insert.connect(faderGain);
+  faderGain.connect(analysers.fader);
+
+  // Aux send (post-fader)
+  analysers.fader.connect(auxGain);
+  auxGain.connect(auxDelay);
+  auxDelay.connect(auxFeedback);
+  auxFeedback.connect(auxDelay);
+  auxDelay.connect(auxReturn);
+  auxGain.connect(analysers.aux);
+
+  // Direct signal + aux return → bus
+  analysers.fader.connect(busGain);
+  auxReturn.connect(busGain);
+  busGain.connect(analysers.bus);
+  analysers.bus.connect(masterGain);
+  masterGain.connect(analysers.master);
+  analysers.master.connect(limiter);
+  limiter.connect(analysers.limiter);
+  analysers.limiter.connect(clipper);
+  clipper.connect(audioCtx.destination);
+
+  mixerNodes = { clipGain, insertGain, faderGain, auxGain, busGain, masterGain, limiter, clipper, auxDelay, auxFeedback, auxReturn };
+  mixerAnalysers = analysers;
+
+  // Set initial values from controls
+  updateMixerGains();
+
+  mixerPlaying = true;
+  document.getElementById('mixer-play').textContent = '⏹';
+  document.getElementById('mixer-play').classList.add('playing');
+  document.getElementById('mixer-play-label').textContent = 'Playing';
+  updateMixerMeters();
+}
+
+function stopMixer() {
+  if (mixerSource) {
+    if (mixerSource.oscs) mixerSource.oscs.forEach(o => { try { o.stop(); } catch(e){} });
+    if (mixerSource.stop) mixerSource.stop();
+  }
+  mixerSource = null;
+  mixerPlaying = false;
+  mixerNodes = {};
+  mixerAnalysers = {};
+  document.getElementById('mixer-play').textContent = '▶';
+  document.getElementById('mixer-play').classList.remove('playing');
+  document.getElementById('mixer-play-label').textContent = 'Play to start';
+  STAGES.forEach(s => {
+    document.getElementById('meter-' + s).style.height = '0%';
+    document.getElementById('clip-ind-' + s).classList.remove('clipping');
+    document.getElementById('stage-' + s).classList.remove('clipping');
+  });
+}
+
+function updateMixerGains() {
+  if (!mixerPlaying) return;
+  const n = mixerNodes;
+  const clipDb = parseFloat(document.getElementById('ctrl-clip').value);
+  const insertDb = parseFloat(document.getElementById('ctrl-insert').value);
+  const insertActive = document.getElementById('ctrl-insert-active').checked;
+  const faderDb = parseFloat(document.getElementById('ctrl-fader').value);
+  const auxDb = parseFloat(document.getElementById('ctrl-aux').value);
+  const busDb = parseFloat(document.getElementById('ctrl-bus').value);
+  const masterDb = parseFloat(document.getElementById('ctrl-master').value);
+  const limThresh = parseFloat(document.getElementById('ctrl-limiter-thresh').value);
+
+  const t = audioCtx.currentTime;
+  n.clipGain.gain.setTargetAtTime(dbToGain(clipDb), t, 0.02);
+  n.insertGain.gain.setTargetAtTime(insertActive ? dbToGain(insertDb) : 1, t, 0.02);
+  n.faderGain.gain.setTargetAtTime(dbToGain(faderDb), t, 0.02);
+  n.auxGain.gain.setTargetAtTime(dbToGain(auxDb), t, 0.02);
+  n.busGain.gain.setTargetAtTime(dbToGain(busDb), t, 0.02);
+  n.masterGain.gain.setTargetAtTime(dbToGain(masterDb), t, 0.02);
+  n.limiter.threshold.setTargetAtTime(limThresh, t, 0.02);
+}
+
+function updateMixerMeters() {
+  if (!mixerPlaying) return;
+  STAGES.forEach(s => {
+    const analyser = mixerAnalysers[s];
+    if (!analyser) return;
+    const data = new Float32Array(analyser.fftSize);
+    analyser.getFloatTimeDomainData(data);
+    let peak = 0;
+    for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+    const db = gainToDb(peak);
+    const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+    document.getElementById('meter-' + s).style.height = pct + '%';
+    const clipping = peak >= 0.95;
+    document.getElementById('clip-ind-' + s).classList.toggle('clipping', clipping);
+    document.getElementById('stage-' + s).classList.toggle('clipping', clipping);
+  });
+  mixerAnimFrame = requestAnimationFrame(updateMixerMeters);
+}
+
+// Mixer control events
+document.getElementById('mixer-play').addEventListener('click', startMixer);
+
+['clip', 'insert', 'fader', 'aux', 'bus', 'master'].forEach(stage => {
+  const ctrl = document.getElementById('ctrl-' + stage);
+  if (!ctrl) return;
+  ctrl.addEventListener('input', function() {
+    const v = parseFloat(this.value);
+    document.getElementById('val-' + stage).textContent = (v >= 0 ? '+' : '') + v + ' dB';
+    updateMixerGains();
+  });
+});
+
+document.getElementById('ctrl-limiter-thresh').addEventListener('input', function() {
+  const v = parseFloat(this.value);
+  document.getElementById('val-limiter').textContent = v + ' dB';
+  updateMixerGains();
+});
+
+document.getElementById('ctrl-insert-active').addEventListener('change', updateMixerGains);
+
+document.getElementById('mixer-source').addEventListener('change', function() {
+  if (mixerPlaying) {
+    stopMixer();
+    startMixer();
+  }
+});
+
+// ============================================================
+//  A/B DEMO
+// ============================================================
+let abOsc = null;
+let abPlaying = false;
+let abAnalyser = null;
+let abGain = null;
+let abClip = null;
+let abLimiter = null;
+
+async function playABDemo(type) {
+  stopABDemo();
+  await initAudio();
+
+  const osc1 = audioCtx.createOscillator();
+  const osc2 = audioCtx.createOscillator();
+  const merge = audioCtx.createGain();
+  merge.gain.value = 0.2;
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 220;
+  osc2.type = 'triangle';
+  osc2.frequency.value = 330;
+
+  abGain = audioCtx.createGain();
+  abClip = audioCtx.createWaveShaper();
+  abClip.oversample = '4x';
+  abLimiter = audioCtx.createDynamicsCompressor();
+  abLimiter.threshold.value = -1;
+  abLimiter.knee.value = 0;
+  abLimiter.ratio.value = 20;
+  abLimiter.attack.value = 0.001;
+  abLimiter.release.value = 0.05;
+  abAnalyser = audioCtx.createAnalyser();
+  abAnalyser.fftSize = 2048;
+
+  osc1.connect(merge);
+  osc2.connect(merge);
+
+  if (type === 'clean') {
+    abGain.gain.value = dbToGain(-8);
+    abClip.curve = makeClipCurve(1.0);
+    abLimiter.threshold.value = -1;
+  } else if (type === 'hot') {
+    abGain.gain.value = dbToGain(-1);
+    abClip.curve = makeClipCurve(1.0);
+    abLimiter.threshold.value = -1;
+  } else if (type === 'clipping') {
+    abGain.gain.value = dbToGain(6);
+    abClip.curve = makeClipCurve(0.5);
+    abLimiter.threshold.value = -1;
+  } else if (type === 'crushed') {
+    abGain.gain.value = dbToGain(6);
+    abClip.curve = makeClipCurve(1.0);
+    abLimiter.threshold.value = -20;
+  }
+
+  merge.connect(abGain);
+  abGain.connect(abClip);
+  abClip.connect(abLimiter);
+  abLimiter.connect(abAnalyser);
+  abAnalyser.connect(audioCtx.destination);
+
+  osc1.start();
+  osc2.start();
+  abOsc = [osc1, osc2];
+  abPlaying = true;
+  updateABMeter();
+
+  // Auto-stop after 3 seconds
+  setTimeout(() => {
+    stopABDemo();
+    document.querySelectorAll('.ab-btn').forEach(b => b.classList.remove('active'));
+  }, 3000);
+}
+
+function stopABDemo() {
+  if (abOsc) abOsc.forEach(o => { try { o.stop(); } catch(e){} });
+  abOsc = null;
+  abPlaying = false;
+  document.getElementById('ab-meter-fill').style.width = '0%';
+  document.getElementById('ab-meter-label').textContent = '—';
+  document.getElementById('ab-clip').classList.remove('clipping');
+}
+
+function updateABMeter() {
+  if (!abPlaying || !abAnalyser) return;
+  const data = new Float32Array(abAnalyser.fftSize);
+  abAnalyser.getFloatTimeDomainData(data);
+  let peak = 0;
+  for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+  const db = gainToDb(peak);
+  const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+  document.getElementById('ab-meter-fill').style.width = pct + '%';
+  document.getElementById('ab-meter-label').textContent = db > -60 ? db.toFixed(1) + ' dB' : '—';
+  document.getElementById('ab-clip').classList.toggle('clipping', peak >= 0.95);
+  requestAnimationFrame(updateABMeter);
+}
+
+document.getElementById('ab-buttons').addEventListener('click', function(e) {
+  const btn = e.target.closest('.ab-btn');
+  if (!btn) return;
+  document.querySelectorAll('.ab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  playABDemo(btn.dataset.demo);
+  // Track for paste-out
+  if (!appState.abDemos.includes(btn.dataset.demo)) {
+    appState.abDemos.push(btn.dataset.demo);
+  }
+});
+
+// ============================================================
+//  CHECK QUESTIONS (inline)
+// ============================================================
+const checkFeedback = {
+  'preamp-clipping': {
+    correct: 'Exactly right! Flat tops and bottoms on a waveform = clipping. The preamp gain was too hot.',
+    incorrect: 'Not quite. Flat-topped waveforms are the telltale sign of clipping — the preamp gain was set too high.'
+  },
+  'signal-chain-order': {
+    correct: 'That\'s it. The fader is post-insert, so pulling it down doesn\'t help the compressor. You need to reduce the level going INTO the compressor — use clip gain or a gain plugin before it.',
+    incorrect: 'Not quite. In most DAWs, the fader comes AFTER the inserts. Pulling the fader down doesn\'t change the level hitting your compressor. You need to fix the gain upstream.'
+  },
+  'headroom': {
+    correct: 'Right! When signals sum together on a bus, their levels combine. 8 tracks at -3 dBFS will be significantly hotter than -3 dBFS when summed. That\'s why you need headroom on individual tracks.',
+    incorrect: 'When signals sum together, their levels add up. 8 hot tracks can easily clip a bus. That\'s exactly why individual tracks should have headroom.'
+  },
+  'compressor-gain': {
+    correct: 'Exactly. Anytime you change level — compressor makeup gain, EQ boost, whatever — check the output level. Is it healthy for the next stage?',
+    incorrect: 'The most important thing after changing gain at any stage: check the output level. 6 dB of makeup gain means the next plugin/stage gets a 6 dB hotter signal.'
+  },
+  'limiter-purpose': {
+    correct: 'That\'s the right call. If the limiter is working that hard, the problem is upstream. Reduce levels at the source, not at the last stage.',
+    incorrect: 'When a limiter is doing 10+ dB of gain reduction, the fix is to go upstream and reduce levels there. The limiter should be a safety net, not a sledgehammer.'
+  },
+  'live-sound': {
+    correct: 'Right! Fix it at the source — the preamp. Pushing the fader or power amp just amplifies a weak, noisy signal.',
+    incorrect: 'Always fix gain problems at the source. If the preamp is too low, turn up the preamp. Compensating downstream just amplifies the noise floor.'
+  }
+};
+
+document.querySelectorAll('.check-question').forEach(q => {
+  const answer = parseInt(q.dataset.answer);
+  const topic = q.dataset.topic;
+  q.querySelectorAll('.check-option').forEach(btn => {
+    btn.addEventListener('click', function() {
+      if (q.classList.contains('answered')) return;
+      q.classList.add('answered');
+      const idx = parseInt(this.dataset.idx);
+      const correct = idx === answer;
+      q.querySelectorAll('.check-option').forEach((b, i) => {
+        b.disabled = true;
+        if (i === answer) b.classList.add('correct');
+        if (i === idx && !correct) b.classList.add('incorrect');
+      });
+      const fb = q.querySelector('.check-feedback');
+      fb.textContent = correct ? checkFeedback[topic].correct : checkFeedback[topic].incorrect;
+      fb.className = 'check-feedback show ' + (correct ? 'correct-fb' : 'incorrect-fb');
+      // Track
+      appState.checkAnswers[topic] = correct;
+    });
+  });
+});
+
+// ============================================================
+//  FIX THIS MIX CHALLENGES
+// ============================================================
+const challengeConfigs = {
+  1: {
+    name: 'The Overcooked Preamp',
+    initial: { clip: 20, insert: 3, fader: -18, aux: -60, bus: 0, master: 0, limiter: -1 },
+    check: (vals) => {
+      // No stage should be clipping, and output should be audible
+      // Clip gain should be reasonable, fader shouldn't be way down
+      const clipOk = vals.clip <= 6;
+      const insertOk = (vals.clip + vals.insert) <= 8;
+      const faderOk = vals.fader >= -12;
+      const masterOk = true;
+      return clipOk && insertOk && faderOk;
+    },
+    successMsg: 'Nice work! You fixed it at the source — reducing clip gain so the insert isn\'t clipping, and bringing the fader back to a usable position.',
+    hintMsg: 'Hint: The problem starts at clip gain. Bring it down, then adjust the fader back up to a reasonable level.'
+  },
+  2: {
+    name: 'The Whisper Treatment',
+    initial: { clip: -20, insert: 0, fader: -6, aux: -60, bus: 0, master: 0, limiter: -20 },
+    check: (vals) => {
+      const clipOk = vals.clip >= -6;
+      const limiterOk = vals.limiter >= -6;
+      return clipOk && limiterOk;
+    },
+    successMsg: 'That\'s it! Boost the signal at the source (clip gain) so the limiter doesn\'t have to crush everything to make it loud enough.',
+    hintMsg: 'Hint: The source is too quiet. Bring up clip gain, and ease off the limiter threshold (closer to 0).'
+  },
+  3: {
+    name: 'The Everything Louder',
+    initial: { clip: 12, insert: 6, fader: 3, aux: -12, bus: 6, master: 3, limiter: -1 },
+    check: (vals) => {
+      const totalGain = vals.clip + vals.insert + vals.fader + vals.bus + vals.master;
+      const noStageAbove6 = vals.clip <= 6 && vals.insert <= 6 && vals.bus <= 3 && vals.master <= 3;
+      return totalGain <= 6 && noStageAbove6;
+    },
+    successMsg: 'Great job! You brought everything under control systematically. Each stage is at a healthy level and the limiter isn\'t working overtime.',
+    hintMsg: 'Hint: Reduce gain at every stage that\'s too hot. The total gain through the chain should leave headroom at the master.'
+  }
+};
+
+// Build challenge mixer UIs
+function buildChallengeStrip(challengeId) {
+  const config = challengeConfigs[challengeId];
+  const container = document.getElementById(`challenge-${challengeId}-mixer`);
+  container.innerHTML = '';
+
+  const stages = [
+    { id: 'clip', label: 'Clip Gain', min: -24, max: 24 },
+    { id: 'insert', label: 'Insert', min: -12, max: 12 },
+    { id: 'fader', label: 'Ch. Fader', min: -60, max: 6 },
+    { id: 'bus', label: 'Mix Bus', min: -24, max: 6 },
+    { id: 'master', label: 'Master', min: -24, max: 6 },
+    { id: 'limiter', label: 'Limiter Thr.', min: -24, max: 0 }
+  ];
+
+  stages.forEach((s, idx) => {
+    if (idx > 0) {
+      const arrow = document.createElement('div');
+      arrow.className = 'mixer-arrow';
+      arrow.textContent = '→';
+      container.appendChild(arrow);
+    }
+    const stage = document.createElement('div');
+    stage.className = 'mixer-stage';
+    stage.id = `ch${challengeId}-stage-${s.id}`;
+
+    const label = document.createElement('div');
+    label.className = 'stage-label';
+    label.textContent = s.label;
+
+    const meterC = document.createElement('div');
+    meterC.className = 'meter-v-container';
+    const fill = document.createElement('div');
+    fill.className = 'meter-v-fill';
+    fill.id = `ch${challengeId}-meter-${s.id}`;
+    const clipInd = document.createElement('div');
+    clipInd.className = 'meter-v-clip';
+    clipInd.id = `ch${challengeId}-clip-${s.id}`;
+    meterC.appendChild(fill);
+    meterC.appendChild(clipInd);
+
+    const slider = document.createElement('input');
+    slider.type = 'range';
+    slider.min = s.min;
+    slider.max = s.max;
+    slider.value = config.initial[s.id];
+    slider.id = `ch${challengeId}-ctrl-${s.id}`;
+    slider.style.width = '80px';
+
+    const val = document.createElement('div');
+    val.className = 'stage-value';
+    val.id = `ch${challengeId}-val-${s.id}`;
+    const v = config.initial[s.id];
+    val.textContent = (v >= 0 ? '+' : '') + v + ' dB';
+
+    stage.appendChild(label);
+    stage.appendChild(meterC);
+    stage.appendChild(slider);
+    stage.appendChild(val);
+    container.appendChild(stage);
+
+    slider.addEventListener('input', function() {
+      const dv = parseFloat(this.value);
+      val.textContent = (dv >= 0 ? '+' : '') + dv + ' dB';
+      updateChallengeGains(challengeId);
+      checkChallengeSolution(challengeId);
+    });
+  });
+}
+
+const challengeAudio = {};
+
+async function startChallengeAudio(challengeId) {
+  await initAudio();
+  if (challengeAudio[challengeId]) {
+    stopChallengeAudio(challengeId);
+    return;
+  }
+
+  const src = createSynthSource();
+  const clipGain = audioCtx.createGain();
+  const insertGain = audioCtx.createGain();
+  const faderGain = audioCtx.createGain();
+  const busGain = audioCtx.createGain();
+  const masterGain = audioCtx.createGain();
+  const limiter = audioCtx.createDynamicsCompressor();
+  limiter.threshold.value = -1;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.05;
+  const clipper = audioCtx.createWaveShaper();
+  clipper.curve = makeHardClipCurve();
+  clipper.oversample = '4x';
+
+  const analysers = {};
+  ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
+    analysers[s] = audioCtx.createAnalyser();
+    analysers[s].fftSize = 2048;
+  });
+
+  src.output.connect(clipGain);
+  clipGain.connect(analysers.clip);
+  analysers.clip.connect(insertGain);
+  insertGain.connect(analysers.insert);
+  analysers.insert.connect(faderGain);
+  faderGain.connect(analysers.fader);
+  analysers.fader.connect(busGain);
+  busGain.connect(analysers.bus);
+  analysers.bus.connect(masterGain);
+  masterGain.connect(analysers.master);
+  analysers.master.connect(limiter);
+  limiter.connect(analysers.limiter);
+  analysers.limiter.connect(clipper);
+  clipper.connect(audioCtx.destination);
+
+  challengeAudio[challengeId] = { src, nodes: { clipGain, insertGain, faderGain, busGain, masterGain, limiter }, analysers };
+  updateChallengeGains(challengeId);
+
+  const btn = document.querySelector(`.challenge-play[data-challenge="${challengeId}"]`);
+  btn.textContent = '⏹';
+  btn.classList.add('playing');
+
+  function meterLoop() {
+    if (!challengeAudio[challengeId]) return;
+    ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
+      const a = challengeAudio[challengeId].analysers[s];
+      const data = new Float32Array(a.fftSize);
+      a.getFloatTimeDomainData(data);
+      let peak = 0;
+      for (let i = 0; i < data.length; i++) peak = Math.max(peak, Math.abs(data[i]));
+      const db = gainToDb(peak);
+      const pct = Math.max(0, Math.min(100, ((db + 40) / 44) * 100));
+      const el = document.getElementById(`ch${challengeId}-meter-${s}`);
+      if (el) el.style.height = pct + '%';
+      const ci = document.getElementById(`ch${challengeId}-clip-${s}`);
+      if (ci) ci.classList.toggle('clipping', peak >= 0.95);
+      const st = document.getElementById(`ch${challengeId}-stage-${s}`);
+      if (st) st.classList.toggle('clipping', peak >= 0.95);
+    });
+    requestAnimationFrame(meterLoop);
+  }
+  meterLoop();
+}
+
+function stopChallengeAudio(challengeId) {
+  const ca = challengeAudio[challengeId];
+  if (!ca) return;
+  if (ca.src && ca.src.oscs) ca.src.oscs.forEach(o => { try { o.stop(); } catch(e){} });
+  delete challengeAudio[challengeId];
+  const btn = document.querySelector(`.challenge-play[data-challenge="${challengeId}"]`);
+  btn.textContent = '▶';
+  btn.classList.remove('playing');
+  ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
+    const el = document.getElementById(`ch${challengeId}-meter-${s}`);
+    if (el) el.style.height = '0%';
+    const ci = document.getElementById(`ch${challengeId}-clip-${s}`);
+    if (ci) ci.classList.remove('clipping');
+    const st = document.getElementById(`ch${challengeId}-stage-${s}`);
+    if (st) st.classList.remove('clipping');
+  });
+}
+
+function updateChallengeGains(challengeId) {
+  const ca = challengeAudio[challengeId];
+  if (!ca) return;
+  const n = ca.nodes;
+  const t = audioCtx.currentTime;
+  const get = (id) => parseFloat(document.getElementById(`ch${challengeId}-ctrl-${id}`).value);
+  n.clipGain.gain.setTargetAtTime(dbToGain(get('clip')), t, 0.02);
+  n.insertGain.gain.setTargetAtTime(dbToGain(get('insert')), t, 0.02);
+  n.faderGain.gain.setTargetAtTime(dbToGain(get('fader')), t, 0.02);
+  n.busGain.gain.setTargetAtTime(dbToGain(get('bus')), t, 0.02);
+  n.masterGain.gain.setTargetAtTime(dbToGain(get('master')), t, 0.02);
+  n.limiter.threshold.setTargetAtTime(get('limiter'), t, 0.02);
+}
+
+function checkChallengeSolution(challengeId) {
+  const config = challengeConfigs[challengeId];
+  const get = (id) => parseFloat(document.getElementById(`ch${challengeId}-ctrl-${id}`).value);
+  const vals = { clip: get('clip'), insert: get('insert'), fader: get('fader'), bus: get('bus'), master: get('master'), limiter: get('limiter') };
+
+  const solved = config.check(vals);
+  const fb = document.getElementById(`challenge-${challengeId}-feedback`);
+  const status = document.getElementById(`challenge-${challengeId}-status`);
+  const card = document.getElementById(`challenge-${challengeId}`);
+
+  if (solved) {
+    fb.textContent = config.successMsg;
+    fb.className = 'check-feedback show correct-fb';
+    status.textContent = '✅ Solved';
+    status.className = 'challenge-status status-solved';
+    card.classList.add('solved');
+    appState.challengeResults[challengeId] = { solved: true, settings: vals };
+  } else {
+    fb.textContent = config.hintMsg;
+    fb.className = 'check-feedback show incorrect-fb';
+    status.textContent = '⏳ Unsolved';
+    status.className = 'challenge-status status-unsolved';
+    card.classList.remove('solved');
+    appState.challengeResults[challengeId] = { solved: false, settings: vals };
+  }
+}
+
+function resetChallenge(challengeId) {
+  const config = challengeConfigs[challengeId];
+  ['clip', 'insert', 'fader', 'bus', 'master', 'limiter'].forEach(s => {
+    const ctrl = document.getElementById(`ch${challengeId}-ctrl-${s}`);
+    if (ctrl) {
+      ctrl.value = config.initial[s];
+      const v = config.initial[s];
+      const valEl = document.getElementById(`ch${challengeId}-val-${s}`);
+      if (valEl) valEl.textContent = (v >= 0 ? '+' : '') + v + ' dB';
+    }
+  });
+  updateChallengeGains(challengeId);
+  const fb = document.getElementById(`challenge-${challengeId}-feedback`);
+  fb.className = 'check-feedback';
+  const status = document.getElementById(`challenge-${challengeId}-status`);
+  status.textContent = '⏳ Unsolved';
+  status.className = 'challenge-status status-unsolved';
+  document.getElementById(`challenge-${challengeId}`).classList.remove('solved');
+  appState.challengeResults[challengeId] = { solved: false, settings: config.initial };
+}
+
+// Wire up challenge play buttons
+document.querySelectorAll('.challenge-play').forEach(btn => {
+  btn.addEventListener('click', () => startChallengeAudio(parseInt(btn.dataset.challenge)));
+});
+
+// Build challenge strips
+[1, 2, 3].forEach(buildChallengeStrip);
+
+// ============================================================
+//  QUIZ
+// ============================================================
+const quizQuestions = [
+  {
+    q: 'What does a preamp do?',
+    opts: ['Amplifies line-level signal to speaker-level', 'Boosts mic-level signal to line-level', 'Compresses the dynamic range of a signal', 'Adds reverb to the signal'],
+    a: 1
+  },
+  {
+    q: 'In a typical DAW signal chain, where does clip gain come?',
+    opts: ['After the channel fader', 'After the inserts', 'Before everything else on the channel', 'On the master bus only'],
+    a: 2
+  },
+  {
+    q: 'Your EQ has a +8 dB boost at 2kHz. What should you be aware of?',
+    opts: ['The frequency response has changed — that\'s the whole point', 'The overall signal level has increased, which could cause clipping downstream', 'EQ doesn\'t affect gain staging', 'You need to add a compressor after every EQ'],
+    a: 1
+  },
+  {
+    q: 'What is "headroom"?',
+    opts: ['The distance between the speakers and the ceiling', 'The space between your signal\'s peak level and 0 dBFS (the digital ceiling)', 'The maximum volume your monitors can produce', 'The amount of compression being applied'],
+    a: 1
+  },
+  {
+    q: 'Why does the limiter go LAST on the master bus?',
+    opts: ['It needs to see the final summed level to set a proper ceiling', 'It sounds better at the end', 'It only works in the master bus slot', 'It has to come after the EQ'],
+    a: 0
+  },
+  {
+    q: 'You have 6 tracks feeding a drum bus, each peaking at -6 dBFS. What\'s likely happening on the bus?',
+    opts: ['The bus is at -6 dBFS', 'The bus is much hotter than -6 dBFS because summed signals add up', 'The bus is quieter because the signals cancel out', 'The bus automatically compensates'],
+    a: 1
+  },
+  {
+    q: 'Your master limiter is constantly doing 12 dB of gain reduction. What\'s the best fix?',
+    opts: ['Increase the limiter threshold', 'Reduce levels upstream (channels, busses) so less signal hits the limiter', 'Add a second limiter', 'Turn up the master fader to overcome the limiting'],
+    a: 1
+  },
+  {
+    q: 'On a live console, aux sends are commonly used for:',
+    opts: ['Recording to a DAW', 'Building monitor mixes for performers and sending signal to effects', 'Controlling the main speakers', 'Adjusting the preamp gain'],
+    a: 1
+  },
+  {
+    q: 'What\'s the difference between a preamp and a power amplifier?',
+    opts: ['They\'re the same thing', 'A preamp boosts mic-level to line-level; a power amp drives speakers', 'A preamp is digital; a power amp is analog', 'A preamp is for live sound; a power amp is for studios'],
+    a: 1
+  },
+  {
+    q: 'Signal clips at the preamp during recording. What\'s the best course of action?',
+    opts: ['Fix it in the mix with a limiter', 'Turn down the fader in the DAW', 'Re-record with lower preamp gain — clipping at the preamp is baked in', 'Use noise reduction to remove the distortion'],
+    a: 2
+  }
+];
+
+let quizState = { current: 0, score: 0, answers: [] };
+
+document.getElementById('quiz-start-btn').addEventListener('click', () => {
+  quizState = { current: 0, score: 0, answers: [] };
+  document.getElementById('quiz-start').classList.add('hidden');
+  document.getElementById('quiz-active').classList.remove('hidden');
+  document.getElementById('quiz-results').classList.add('hidden');
+  showQuizQuestion();
+});
+
+document.getElementById('quiz-retry-btn').addEventListener('click', () => {
+  quizState = { current: 0, score: 0, answers: [] };
+  document.getElementById('quiz-results').classList.add('hidden');
+  document.getElementById('quiz-active').classList.remove('hidden');
+  showQuizQuestion();
+});
+
+document.getElementById('quiz-next-btn').addEventListener('click', () => {
+  quizState.current++;
+  if (quizState.current >= quizQuestions.length) {
+    showQuizResults();
+  } else {
+    showQuizQuestion();
+  }
+});
+
+function showQuizQuestion() {
+  const q = quizQuestions[quizState.current];
+  document.getElementById('quiz-counter').textContent = `Question ${quizState.current + 1} of ${quizQuestions.length}`;
+  document.getElementById('quiz-progress-fill').style.width = ((quizState.current / quizQuestions.length) * 100) + '%';
+  document.getElementById('quiz-question').textContent = q.q;
+  document.getElementById('quiz-next-btn').classList.add('hidden');
+  document.getElementById('quiz-feedback').className = 'check-feedback';
+
+  const optContainer = document.getElementById('quiz-options');
+  optContainer.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'check-option';
+    btn.textContent = opt;
+    btn.addEventListener('click', () => handleQuizAnswer(i));
+    optContainer.appendChild(btn);
+  });
+}
+
+function handleQuizAnswer(idx) {
+  const q = quizQuestions[quizState.current];
+  const correct = idx === q.a;
+  if (correct) quizState.score++;
+  quizState.answers.push({ question: q.q, chose: q.opts[idx], correct });
+
+  const opts = document.querySelectorAll('#quiz-options .check-option');
+  opts.forEach((btn, i) => {
+    btn.disabled = true;
+    if (i === q.a) btn.classList.add('correct');
+    if (i === idx && !correct) btn.classList.add('incorrect');
+  });
+
+  const fb = document.getElementById('quiz-feedback');
+  fb.textContent = correct ? 'Correct!' : `Not quite. The answer is: ${q.opts[q.a]}`;
+  fb.className = 'check-feedback show ' + (correct ? 'correct-fb' : 'incorrect-fb');
+  document.getElementById('quiz-next-btn').classList.remove('hidden');
+  document.getElementById('quiz-next-btn').textContent = quizState.current === quizQuestions.length - 1 ? 'See Results' : 'Next →';
+}
+
+function showQuizResults() {
+  document.getElementById('quiz-active').classList.add('hidden');
+  document.getElementById('quiz-results').classList.remove('hidden');
+  document.getElementById('quiz-score-num').textContent = quizState.score;
+  const pct = quizState.score / quizQuestions.length;
+  let msg = '';
+  if (pct === 1) msg = 'Perfect score! You nailed it. 🎯';
+  else if (pct >= 0.8) msg = 'Great job! You\'ve got a solid understanding of gain staging.';
+  else if (pct >= 0.6) msg = 'Good effort! Review the sections you missed and try again.';
+  else msg = 'Keep learning! Scroll back through the lesson and try the interactive mixer again.';
+  document.getElementById('quiz-result-msg').textContent = msg;
+  document.getElementById('quiz-progress-fill').style.width = '100%';
+  appState.quizScore = quizState.score;
+  appState.quizAnswers = quizState.answers;
+}
+
+// ============================================================
+//  APP STATE (for paste-out)
+// ============================================================
+const appState = {
+  checkAnswers: {},
+  challengeResults: {},
+  quizScore: null,
+  quizAnswers: [],
+  abDemos: []
+};
+
+// ============================================================
+//  PASTE-OUT GENERATION
+// ============================================================
+document.getElementById('generate-summary-btn').addEventListener('click', generateSummary);
+document.getElementById('copy-summary-btn').addEventListener('click', () => {
+  const text = document.getElementById('paste-output').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    document.getElementById('copy-confirm').textContent = '✅ Copied to clipboard!';
+    setTimeout(() => { document.getElementById('copy-confirm').textContent = ''; }, 3000);
+  });
+});
+
+function generateSummary() {
+  const name = document.getElementById('student-name').value.trim() || '(No name entered)';
+  const reflect1 = document.getElementById('reflect-1').value.trim() || '(not answered)';
+  const reflect2 = document.getElementById('reflect-2').value.trim() || '(not answered)';
+  const reflect3 = document.getElementById('reflect-3').value.trim() || '(not answered)';
+  const now = new Date();
+  const timestamp = now.toLocaleString();
+
+  // Check questions summary
+  const checkTopics = {
+    'preamp-clipping': 'Preamp Clipping',
+    'signal-chain-order': 'Signal Chain Order',
+    'headroom': 'Headroom / Bus Summing',
+    'compressor-gain': 'Compressor Gain Staging',
+    'limiter-purpose': 'Limiter Purpose',
+    'live-sound': 'Live Sound Basics'
+  };
+  let checkSummary = '';
+  let checkCorrect = 0;
+  let checkTotal = 0;
+  Object.entries(checkTopics).forEach(([key, label]) => {
+    if (appState.checkAnswers[key] !== undefined) {
+      checkTotal++;
+      const correct = appState.checkAnswers[key];
+      if (correct) checkCorrect++;
+      checkSummary += `  ${correct ? '✅' : '❌'} ${label}\n`;
+    }
+  });
+
+  // Challenge summary
+  let challengeSummary = '';
+  [1, 2, 3].forEach(id => {
+    const r = appState.challengeResults[id];
+    const config = challengeConfigs[id];
+    if (r) {
+      challengeSummary += `  ${r.solved ? '✅' : '❌'} Challenge ${id}: ${config.name}`;
+      if (r.solved && r.settings) {
+        challengeSummary += ` (Final: clip=${r.settings.clip}dB, ins=${r.settings.insert}dB, fader=${r.settings.fader}dB, bus=${r.settings.bus}dB, master=${r.settings.master}dB, lim=${r.settings.limiter}dB)`;
+      }
+      challengeSummary += '\n';
+    } else {
+      challengeSummary += `  ⬜ Challenge ${id}: ${config.name} (not attempted)\n`;
+    }
+  });
+
+  // Quiz summary
+  let quizSummary = '';
+  if (appState.quizScore !== null) {
+    quizSummary = `  Score: ${appState.quizScore}/${quizQuestions.length}\n`;
+    appState.quizAnswers.forEach((a, i) => {
+      quizSummary += `  ${a.correct ? '✅' : '❌'} Q${i + 1}: ${a.question}\n     Answered: ${a.chose}\n`;
+    });
+  } else {
+    quizSummary = '  (Quiz not completed)\n';
+  }
+
+  // AB demos
+  const abLabels = { clean: 'Clean (-8 dB)', hot: 'Slightly Hot (-1 dB)', clipping: 'Clipping (+6 dB)', crushed: 'Limiter Crushed' };
+  let abSummary = '';
+  if (appState.abDemos.length > 0) {
+    abSummary = appState.abDemos.map(d => `  🔊 ${abLabels[d]}`).join('\n') + '\n';
+  } else {
+    abSummary = '  (No demos listened to)\n';
+  }
+
+  // Concepts covered
+  let concepts = [];
+  if (Object.keys(appState.checkAnswers).length > 0) concepts.push('Preamp gain & clipping');
+  if (appState.checkAnswers['signal-chain-order'] !== undefined) concepts.push('Signal chain order in a DAW');
+  if (appState.checkAnswers['headroom'] !== undefined) concepts.push('Headroom and bus summing');
+  if (appState.checkAnswers['compressor-gain'] !== undefined) concepts.push('How compressors & EQ affect gain');
+  if (appState.checkAnswers['limiter-purpose'] !== undefined) concepts.push('Master limiter usage');
+  if (appState.checkAnswers['live-sound'] !== undefined) concepts.push('Live sound gain structure');
+  if (appState.abDemos.length > 0) concepts.push('Listened to clean vs clipping audio examples');
+  const solvedCount = [1, 2, 3].filter(id => appState.challengeResults[id]?.solved).length;
+  if (solvedCount > 0) concepts.push(`Solved ${solvedCount}/3 Fix This Mix challenges`);
+  if (appState.quizScore !== null) concepts.push(`Completed final quiz (${appState.quizScore}/${quizQuestions.length})`);
+
+  const output = `========================================
+🎚️ GAIN STAGING — LESSON SUMMARY
+========================================
+
+Student: ${name}
+Date: ${timestamp}
+
+--- KEY CONCEPTS COVERED ---
+${concepts.length > 0 ? concepts.map(c => '• ' + c).join('\n') : '(No interactions recorded)'}
+
+--- INLINE CHECK QUESTIONS (${checkCorrect}/${checkTotal} correct) ---
+${checkSummary || '  (None attempted)'}
+
+--- AUDIO DEMOS LISTENED TO ---
+${abSummary}
+
+--- FIX THIS MIX CHALLENGES ---
+${challengeSummary}
+
+--- FINAL QUIZ ---
+${quizSummary}
+
+--- REFLECTIONS ---
+
+Q: In your own words, why does it matter where in the chain you reduce gain?
+A: ${reflect1}
+
+Q: What's one thing about gain staging you didn't know before this lesson?
+A: ${reflect2}
+
+Q: How would you explain the difference between a preamp and a power amp to a classmate?
+A: ${reflect3}
+
+========================================
+Generated by Gain Staging Interactive Lesson
+${timestamp}
+========================================`;
+
+  document.getElementById('paste-output').textContent = output;
+  document.getElementById('summary-output-wrap').classList.remove('hidden');
+  document.getElementById('summary-output-wrap').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Make resetChallenge globally available
+window.resetChallenge = resetChallenge;
+</script>
+
+</body>
+</html>
