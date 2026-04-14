@@ -1458,7 +1458,7 @@ function gainToDb(g) {
 // ============================================================
 //  PREAMP DEMO
 // ============================================================
-let preampOsc = null;
+let preampOscs = [];
 let preampGain = null;
 let preampAnalyser = null;
 let preampClipNode = null;
@@ -1470,12 +1470,12 @@ async function startPreampDemo() {
     stopPreampDemo();
     return;
   }
-  preampOsc = audioCtx.createOscillator();
+  const osc1 = audioCtx.createOscillator();
   const osc2 = audioCtx.createOscillator();
   const merge = audioCtx.createGain();
   merge.gain.value = 0.3;
-  preampOsc.type = 'sawtooth';
-  preampOsc.frequency.value = 220;
+  osc1.type = 'sawtooth';
+  osc1.frequency.value = 220;
   osc2.type = 'sine';
   osc2.frequency.value = 221;
   preampGain = audioCtx.createGain();
@@ -1486,14 +1486,15 @@ async function startPreampDemo() {
   preampClipNode.oversample = '4x';
   preampAnalyser = audioCtx.createAnalyser();
   preampAnalyser.fftSize = 2048;
-  preampOsc.connect(merge);
+  osc1.connect(merge);
   osc2.connect(merge);
   merge.connect(preampGain);
   preampGain.connect(preampClipNode);
   preampClipNode.connect(preampAnalyser);
   preampAnalyser.connect(audioCtx.destination);
-  preampOsc.start();
+  osc1.start();
   osc2.start();
+  preampOscs = [osc1, osc2];
   preampPlaying = true;
   document.getElementById('preamp-play').textContent = '⏹';
   document.getElementById('preamp-play').classList.add('playing');
@@ -1502,8 +1503,8 @@ async function startPreampDemo() {
 }
 
 function stopPreampDemo() {
-  if (preampOsc) { try { preampOsc.stop(); } catch(e){} }
-  preampOsc = null;
+  preampOscs.forEach(o => { try { o.stop(); } catch(e){} });
+  preampOscs = [];
   preampPlaying = false;
   document.getElementById('preamp-play').textContent = '▶';
   document.getElementById('preamp-play').classList.remove('playing');
