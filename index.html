@@ -1175,8 +1175,8 @@ input[type="range"]::-moz-range-thumb {
         <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
           <label class="label" for="mixer-source">Source:</label>
           <select id="mixer-source" style="width:auto;padding:6px 10px;font-size:0.82rem;">
-            <option value="synth">Synth Pad</option>
             <option value="drums">Drum Loop</option>
+            <option value="synth">Synth Pad</option>
             <option value="noise">Pink Noise</option>
           </select>
         </div>
@@ -1303,7 +1303,7 @@ input[type="range"]::-moz-range-thumb {
     <!-- Challenge 1 -->
     <div class="challenge-card" id="challenge-1">
       <div class="challenge-status status-unsolved" id="challenge-1-status">⏳ Unsolved</div>
-      <h3>Challenge 1: The Overcooked Preamp</h3>
+      <h3>Challenge 1: The Overcooked Clip</h3>
       <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Someone cranked the clip gain way too high and pulled the fader down to compensate. The insert is clipping even though the output sounds "fine." Fix the gain staging so no stage clips.</p>
       <div class="audio-controls mb-16">
         <button class="play-btn challenge-play" data-challenge="1" aria-label="Play">▶</button>
@@ -1320,7 +1320,7 @@ input[type="range"]::-moz-range-thumb {
     <div class="challenge-card" id="challenge-2">
       <div class="challenge-status status-unsolved" id="challenge-2-status">⏳ Unsolved</div>
       <h3>Challenge 2: The Whisper Treatment</h3>
-      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Everything is recorded way too quiet. Someone smashed the limiter threshold down to make it loud enough. The result: no dynamics, everything sounds crushed. Fix it from the source.</p>
+      <p style="font-size:0.88rem;color:var(--text-secondary);margin-bottom:16px;">Everything is recorded way too quiet. Someone smashed the maximizer (a limiter with a lot of makeup gain — some DAWs call it a "maximizer" but it's really just an aggressive limiter) down to make it loud enough. The result: no dynamics, everything sounds crushed. Fix it from the source.</p>
       <div class="audio-controls mb-16">
         <button class="play-btn challenge-play" data-challenge="2" aria-label="Play">▶</button>
         <span style="font-size:0.82rem;color:var(--text-secondary);">Play to hear the problem</span>
@@ -2021,7 +2021,7 @@ document.querySelectorAll('.check-question').forEach(q => {
 // ============================================================
 const challengeConfigs = {
   1: {
-    name: 'The Overcooked Preamp',
+    name: 'The Overcooked Clip',
     initial: { clip: 20, insert: 3, fader: -18, aux: -60, bus: 0, master: 0, limiter: -1 },
     check: (vals) => {
       // No stage should be clipping, and output should be audible
@@ -2571,7 +2571,28 @@ ${timestamp}
   document.getElementById('paste-output').textContent = output;
   document.getElementById('summary-output-wrap').classList.remove('hidden');
   document.getElementById('summary-output-wrap').scrollIntoView({ behavior: 'smooth' });
+  document.getElementById('generate-summary-btn').textContent = 'Regenerate Summary';
 }
+
+// Hide summary when student interacts with anything after generating
+function invalidateSummary() {
+  const wrap = document.getElementById('summary-output-wrap');
+  if (!wrap.classList.contains('hidden')) {
+    wrap.classList.add('hidden');
+    document.getElementById('generate-summary-btn').textContent = 'Regenerate Summary';
+    document.getElementById('copy-confirm').textContent = '';
+  }
+}
+
+// Hook invalidation into check questions, challenges, quiz, reflections, and AB demos
+document.querySelectorAll('.check-option').forEach(btn => btn.addEventListener('click', invalidateSummary));
+document.querySelectorAll('.challenge-mixer input[type="range"]').forEach(el => el.addEventListener('input', invalidateSummary));
+document.querySelectorAll('#ab-buttons .ab-btn').forEach(btn => btn.addEventListener('click', invalidateSummary));
+document.getElementById('quiz-start-btn').addEventListener('click', invalidateSummary);
+document.getElementById('quiz-retry-btn').addEventListener('click', invalidateSummary);
+['reflect-1', 'reflect-2', 'reflect-3'].forEach(id => {
+  document.getElementById(id).addEventListener('input', invalidateSummary);
+});
 
 // Make resetChallenge globally available
 window.resetChallenge = resetChallenge;
